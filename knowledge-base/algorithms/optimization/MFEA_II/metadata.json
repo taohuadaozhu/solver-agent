@@ -1,0 +1,23 @@
+{
+  "name": "MFEA_II",
+  "chineseName": "",
+  "description": "MFEA_II 是 MFEA 的改进版本，增强了多任务优化性能。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

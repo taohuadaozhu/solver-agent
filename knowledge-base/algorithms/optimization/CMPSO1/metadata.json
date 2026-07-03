@@ -1,0 +1,22 @@
+{
+  "name": "CMPSO1",
+  "chineseName": "",
+  "description": "PSO1 的 Cauchy 变异增强版本，用于离散排列优化。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Swarm"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

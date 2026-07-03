@@ -1,0 +1,23 @@
+{
+  "name": "GWO",
+  "chineseName": "灰狼优化",
+  "description": "GWO 是灰狼优化算法，使用领导狼层级结构更新个体位置。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Metaheuristic"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

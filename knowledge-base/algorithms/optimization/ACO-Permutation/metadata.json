@@ -1,0 +1,22 @@
+{
+  "name": "ACO-Permutation",
+  "chineseName": "",
+  "description": "排列问题专用蚁群算法，通过信息素引导构造可行解。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Swarm"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

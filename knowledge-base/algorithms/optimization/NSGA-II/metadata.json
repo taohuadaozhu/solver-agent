@@ -1,0 +1,23 @@
+{
+  "name": "NSGA-II",
+  "chineseName": "非支配排序遗传算法 II",
+  "description": "NSGA-II 是一种经典的多目标演化算法，通过非支配排序与拥挤距离选择保持解集的收敛性和多样性，适用于连续变量多目标优化问题。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Multi Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

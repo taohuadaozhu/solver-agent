@@ -1,0 +1,22 @@
+{
+  "name": "PSO-Permutation",
+  "chineseName": "",
+  "description": "交换序形式的粒子群优化，用于离散排列问题的单目标搜索。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Swarm"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

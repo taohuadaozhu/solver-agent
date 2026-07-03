@@ -1,0 +1,22 @@
+{
+  "name": "GA-ERX-2Opt",
+  "chineseName": "",
+  "description": "边重组交叉 + 2-opt，用于提升排列搜索质量。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "GA",
+  "chineseName": "遗传算法",
+  "description": "GA 是经典遗传算法，通过选择、交叉和变异操作探索连续优化空间。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

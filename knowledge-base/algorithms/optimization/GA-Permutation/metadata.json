@@ -1,0 +1,22 @@
+{
+  "name": "GA-Permutation",
+  "chineseName": "",
+  "description": "排列编码遗传算法，使用交换序交叉和交换变异。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "HS-Permutation",
+  "chineseName": "",
+  "description": "适用于排列优化的和声搜索，使用和声记忆生成新解。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Metaheuristic"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

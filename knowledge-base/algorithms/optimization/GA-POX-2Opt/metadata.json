@@ -1,0 +1,22 @@
+{
+  "name": "GA-POX-2Opt",
+  "chineseName": "",
+  "description": "基于工作调度的 POX 交叉 + 2-opt，用于 JSP 与排列优化。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

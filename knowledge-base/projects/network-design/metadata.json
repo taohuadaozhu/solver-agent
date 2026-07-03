@@ -1,0 +1,61 @@
+{
+  "name": "Network Design",
+  "code": "ND",
+  "domain": "供应链",
+  "description": "网络设计案例，面向供应链优化与拓扑设计。",
+  "tags": [
+    "网络设计",
+    "供应链",
+    "物流",
+    "设施布局"
+  ],
+  "overview": "Network Design determines the location, capacity and connections of logistics facilities to minimize total supply chain cost.",
+  "businessScenarios": [
+    "物流网络规划",
+    "仓储布局",
+    "供应链优化",
+    "配送中心选址"
+  ],
+  "problemDescription": "选择工厂、仓库和配送中心，并规划运输路径和库存配置，同时满足需求和成本约束。",
+  "decisionVariables": [
+    "设施选址",
+    "运输路径",
+    "库存分配",
+    "容量配置"
+  ],
+  "objective": [
+    "最小化总网络成本",
+    "最小化运输距离",
+    "最大化服务水平",
+    "最小化库存成本"
+  ],
+  "constraints": [
+    "需求满足",
+    "设施容量",
+    "运输能力",
+    "预算限制",
+    "交货时间窗口"
+  ],
+  "characteristics": {
+    "domain": "Supply Chain Optimization",
+    "problemType": "Network Design",
+    "decisionVariable": "Discrete",
+    "objective": "Single or Multi Objective",
+    "constraintLevel": "Medium",
+    "complexity": "NP-Hard",
+    "dynamicEnvironment": "Supported",
+    "industrialApplicability": "High"
+  },
+  "recommendedAlgorithms": [
+    "Mixed Integer Programming",
+    "Genetic Algorithm (GA)",
+    "Particle Swarm Optimization (PSO)",
+    "Ant Colony Optimization (ACO)"
+  ],
+  "recommendationStrategy": {
+    "Facility location": "MIP",
+    "Large-scale network design": "GA",
+    "Multi-objective trade-offs": "NSGA-II",
+    "Route optimization": "ACO"
+  }
+}

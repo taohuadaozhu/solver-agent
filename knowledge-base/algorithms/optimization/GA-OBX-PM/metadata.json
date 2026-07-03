@@ -1,0 +1,22 @@
+{
+  "name": "GA-OBX-PM",
+  "chineseName": "",
+  "description": "Order-Based Crossover + 修复，强调父代基因集合的顺序。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

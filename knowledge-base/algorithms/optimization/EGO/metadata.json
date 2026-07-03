@@ -1,0 +1,23 @@
+{
+  "name": "EGO",
+  "chineseName": "",
+  "description": "EGO 是基于代理模型的全局优化方法，适合高开销连续问题。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Surrogate"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

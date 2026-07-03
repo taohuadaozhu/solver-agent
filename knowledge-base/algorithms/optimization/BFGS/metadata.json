@@ -1,0 +1,23 @@
+{
+  "name": "BFGS",
+  "chineseName": "拟牛顿法",
+  "description": "BFGS 是经典拟牛顿法，用于连续可微函数的无约束优化。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Gradient-based"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

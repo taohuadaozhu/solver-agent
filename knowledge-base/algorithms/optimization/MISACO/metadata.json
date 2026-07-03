@@ -1,0 +1,23 @@
+{
+  "name": "MISACO",
+  "chineseName": "",
+  "description": "MISACO 是 Metaheuristic 路径的一种连续优化算法，通常用于单目标优化问题。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Metaheuristic"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

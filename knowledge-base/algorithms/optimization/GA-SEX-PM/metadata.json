@@ -1,0 +1,22 @@
+{
+  "name": "GA-SEX-PM",
+  "chineseName": "",
+  "description": "Subtour Exchange Crossover + 修复，用于排列结构的局部重组。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

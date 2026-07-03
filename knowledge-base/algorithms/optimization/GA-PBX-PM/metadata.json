@@ -1,0 +1,22 @@
+{
+  "name": "GA-PBX-PM",
+  "chineseName": "",
+  "description": "Position Based Crossover + 修复，用于保留父代位置关系。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "GA-PPX-PM",
+  "chineseName": "",
+  "description": "基于 PPX 交叉和多项式变异/随机键修复的排列遗传算法。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

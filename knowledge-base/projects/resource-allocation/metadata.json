@@ -1,0 +1,61 @@
+{
+  "name": "Resource Allocation",
+  "code": "RA",
+  "domain": "云计算/医院",
+  "description": "资源分配案例，面向云计算与医院资源调度优化。",
+  "tags": [
+    "资源分配",
+    "云计算",
+    "医院",
+    "调度"
+  ],
+  "overview": "Resource Allocation assigns limited resources to competing tasks or services to maximize utilization and service performance.",
+  "businessScenarios": [
+    "云计算资源调度",
+    "医院床位分配",
+    "设备预约管理",
+    "服务系统调度"
+  ],
+  "problemDescription": "在资源有限条件下，为任务或用户分配计算资源、人员或设备，并保持服务质量与负载均衡。",
+  "decisionVariables": [
+    "资源分配",
+    "任务调度",
+    "优先级排序",
+    "容量控制"
+  ],
+  "objective": [
+    "最大化资源利用",
+    "最小化等待时间",
+    "最小化服务成本",
+    "平衡负载"
+  ],
+  "constraints": [
+    "资源容量",
+    "服务等级",
+    "时间窗",
+    "兼容性",
+    "优先级约束"
+  ],
+  "characteristics": {
+    "domain": "Resource Optimization",
+    "problemType": "Allocation",
+    "decisionVariable": "Discrete",
+    "objective": "Single or Multi Objective",
+    "constraintLevel": "Medium",
+    "complexity": "NP-Hard",
+    "dynamicEnvironment": "Supported",
+    "industrialApplicability": "High"
+  },
+  "recommendedAlgorithms": [
+    "Genetic Algorithm (GA)",
+    "NSGA-II",
+    "Particle Swarm Optimization (PSO)",
+    "Ant Colony Optimization (ACO)"
+  ],
+  "recommendationStrategy": {
+    "Cloud scheduling": "PSO",
+    "Hospital allocation": "GA",
+    "Multi-objective service": "NSGA-II",
+    "Dynamic assignment": "ACO"
+  }
+}

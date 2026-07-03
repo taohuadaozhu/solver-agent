@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NSGA-II Parameter Schema",
+  "type": "object",
+  "properties": {
+    "population_size": {
+      "type": "integer",
+      "title": "Population Size",
+      "description": "种群规模，建议为偶数。",
+      "minimum": 4,
+      "default": 100
+    },
+    "num_generations": {
+      "type": "integer",
+      "title": "Number of Generations",
+      "description": "最大迭代代数。",
+      "minimum": 1,
+      "default": 250
+    },
+    "crossover_rate": {
+      "type": "number",
+      "title": "Crossover Rate",
+      "description": "交叉概率，通常取 0.8-1.0。",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 0.9
+    },
+    "mutation_rate": {
+      "type": "number",
+      "title": "Mutation Rate",
+      "description": "变异概率，常见取 1/变量数。",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 0.1
+    },
+    "distribution_index_crossover": {
+      "type": "integer",
+      "title": "Distribution Index for Crossover",
+      "description": "多项式交叉的分布指数。",
+      "minimum": 1,
+      "default": 20
+    },
+    "distribution_index_mutation": {
+      "type": "integer",
+      "title": "Distribution Index for Mutation",
+      "description": "多项式变异的分布指数。",
+      "minimum": 1,
+      "default": 20
+    },
+    "num_objectives": {
+      "type": "integer",
+      "title": "Number of Objectives",
+      "description": "目标函数数量，NSGA-II 通常用于多目标问题。",
+      "minimum": 2,
+      "default": 2
+    },
+    "num_variables": {
+      "type": "integer",
+      "title": "Number of Decision Variables",
+      "description": "决策变量数量。",
+      "minimum": 1,
+      "default": 30
+    },
+    "variable_bounds": {
+      "type": "object",
+      "title": "Variable Bounds",
+      "description": "决策变量搜索空间边界。",
+      "properties": {
+        "lower": {
+          "type": ["number", "array"],
+          "description": "下界，可为单一数值或每个变量的数组。"
+        },
+        "upper": {
+          "type": ["number", "array"],
+          "description": "上界，可为单一数值或每个变量的数组。"
+        }
+      },
+      "required": ["lower", "upper"]
+    },
+    "selection_operator": {
+      "type": "string",
+      "title": "Selection Operator",
+      "description": "选择算子名称。",
+      "default": "binary_tournament",
+      "enum": ["binary_tournament"]
+    },
+    "crossover_operator": {
+      "type": "string",
+      "title": "Crossover Operator",
+      "description": "交叉算子名称。",
+      "default": "sbx",
+      "enum": ["sbx"]
+    },
+    "mutation_operator": {
+      "type": "string",
+      "title": "Mutation Operator",
+      "description": "变异算子名称。",
+      "default": "polynomial",
+      "enum": ["polynomial"]
+    }
+  },
+  "required": [
+    "population_size",
+    "num_generations",
+    "crossover_rate",
+    "mutation_rate",
+    "num_objectives",
+    "num_variables",
+    "variable_bounds"
+  ]
+}

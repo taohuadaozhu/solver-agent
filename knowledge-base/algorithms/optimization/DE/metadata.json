@@ -1,0 +1,23 @@
+{
+  "name": "DE",
+  "chineseName": "差分进化",
+  "description": "DE 是差分进化算法，通过差分变异和交叉生成候选解，擅长连续实数优化。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

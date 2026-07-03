@@ -1,0 +1,23 @@
+{
+  "name": "FRCG",
+  "chineseName": "",
+  "description": "FRCG 是 Gradient-based 路径的一种连续优化算法，通常用于单目标优化问题。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Gradient-based"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

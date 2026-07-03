@@ -1,0 +1,61 @@
+{
+  "name": "Vehicle Routing Problem",
+  "code": "VRP",
+  "domain": "物流",
+  "description": "车辆路径规划案例，面向配送、运力和时间窗约束优化。",
+  "tags": [
+    "物流",
+    "路径规划",
+    "VRP",
+    "配送"
+  ],
+  "overview": "Vehicle Routing Problem optimizes delivery routes for a fleet of vehicles to serve customer demand under capacity and time-window constraints.",
+  "businessScenarios": [
+    "城市配送",
+    "快递物流",
+    "冷链运输",
+    "服务巡检"
+  ],
+  "problemDescription": "为车辆分配送货路线，满足客户需求、载量和时间窗限制，同时控制成本。",
+  "decisionVariables": [
+    "车辆路径",
+    "访问顺序",
+    "车辆选择",
+    "装载量"
+  ],
+  "objective": [
+    "最小化总距离",
+    "最小化配送时间",
+    "最小化车辆数量",
+    "平衡负载"
+  ],
+  "constraints": [
+    "车辆容量",
+    "时间窗口",
+    "驾驶时长",
+    "配送顺序",
+    "服务水平"
+  ],
+  "characteristics": {
+    "domain": "Logistics Optimization",
+    "problemType": "Routing",
+    "decisionVariable": "Discrete",
+    "objective": "Single or Multi Objective",
+    "constraintLevel": "High",
+    "complexity": "NP-Hard",
+    "dynamicEnvironment": "Supported",
+    "industrialApplicability": "High"
+  },
+  "recommendedAlgorithms": [
+    "Ant Colony Optimization (ACO)",
+    "Genetic Algorithm (GA)",
+    "Tabu Search",
+    "NSGA-II"
+  ],
+  "recommendationStrategy": {
+    "Capacitated routing": "ACO",
+    "Time-window routing": "Tabu Search",
+    "Multi-objective logistics": "NSGA-II",
+    "Flexible routing": "GA"
+  }
+}

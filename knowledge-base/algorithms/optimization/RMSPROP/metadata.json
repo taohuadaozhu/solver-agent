@@ -1,0 +1,23 @@
+{
+  "name": "RMSPROP",
+  "chineseName": "RMSProp 优化器",
+  "description": "RMSProp 是一种自适应学习率优化算法，适合带噪声的连续优化。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Gradient-based"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

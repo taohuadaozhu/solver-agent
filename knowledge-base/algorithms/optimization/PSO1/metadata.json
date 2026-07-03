@@ -1,0 +1,22 @@
+{
+  "name": "PSO1",
+  "chineseName": "",
+  "description": "单目标PSO变体，面向排列编码的离散群体搜索。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Swarm"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

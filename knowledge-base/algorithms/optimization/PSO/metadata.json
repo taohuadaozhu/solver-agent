@@ -1,0 +1,23 @@
+{
+  "name": "PSO",
+  "chineseName": "粒子群优化",
+  "description": "PSO 是粒子群优化算法，使用速度和位置更新规则在连续空间中搜索最优解。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Swarm"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

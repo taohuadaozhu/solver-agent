@@ -1,0 +1,23 @@
+{
+  "name": "ADAM",
+  "chineseName": "Adam 优化器",
+  "description": "Adam 是一种自适应梯度优化方法，常用于连续优化和神经网络训练。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Gradient-based"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "name": "Job Shop Scheduling",
+  "code": "JSP",
+  "domain": "制造业",
+  "description": "作业车间调度案例，结合生产计划与资源分配优化。",
+  "tags": [
+    "车间调度",
+    "制造业",
+    "生产计划",
+    "资源分配"
+  ],
+  "overview": "Job Shop Scheduling is a core manufacturing optimization problem where multiple jobs must be scheduled on machines with processing order constraints.",
+  "businessScenarios": [
+    "制造执行系统",
+    "车间生产计划",
+    "设备调度",
+    "订单处理"
+  ],
+  "problemDescription": "为生产工件分配机器和工序顺序，满足交期、设备可用性和资源冲突约束。",
+  "decisionVariables": [
+    "工件分配",
+    "加工顺序",
+    "开始时间",
+    "机床选择",
+    "交期控制"
+  ],
+  "objective": [
+    "最小化完工时间",
+    "最小化总延迟",
+    "最小化成本",
+    "最大化设备利用率"
+  ],
+  "constraints": [
+    "工序顺序约束",
+    "机床可用性",
+    "交期约束",
+    "资源容量",
+    "设置时间"
+  ],
+  "characteristics": {
+    "domain": "Manufacturing Optimization",
+    "problemType": "Scheduling",
+    "decisionVariable": "Discrete",
+    "objective": "Single or Multi Objective",
+    "constraintLevel": "High",
+    "complexity": "NP-Hard",
+    "dynamicEnvironment": "Supported",
+    "industrialApplicability": "High"
+  },
+  "recommendedAlgorithms": [
+    "Genetic Algorithm (GA)",
+    "NSGA-II",
+    "Tabu Search",
+    "Particle Swarm Optimization (PSO)"
+  ],
+  "recommendationStrategy": {
+    "Complex precedence constraints": "Tabu Search",
+    "Multi-objective scheduling": "NSGA-II",
+    "Flexible encoding": "GA"
+  }
+}

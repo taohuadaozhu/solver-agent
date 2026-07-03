@@ -1,0 +1,22 @@
+{
+  "name": "GA-OrderPrefix-Insert",
+  "chineseName": "",
+  "description": "保持父代前缀后顺序补全，并用插入变异改进排列。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

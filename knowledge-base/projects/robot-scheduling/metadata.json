@@ -1,0 +1,63 @@
+{
+  "name": "Robot Scheduling",
+  "code": "RS",
+  "domain": "制造业",
+  "description": "机器人调度优化案例，结合多目标算法选择与调度策略。",
+  "tags": [
+    "机器人",
+    "调度",
+    "制造业",
+    "生产调度",
+    "智能制造"
+  ],
+  "overview": "机器人调度是智能制造与自动化仓储中常见的组合优化问题，目标是在满足约束的前提下为机器人分配任务并优化执行顺序。",
+  "businessScenarios": [
+    "智能工厂",
+    "自动化仓储",
+    "AGV调度",
+    "AMR路径规划"
+  ],
+  "problemDescription": "为一组生产任务分配机器人资源，决定任务执行顺序、开始结束时间、路径和充电计划，同时满足设备和安全约束。",
+  "decisionVariables": [
+    "机器人分配",
+    "任务序列",
+    "开始时间",
+    "路径规划",
+    "充电决策"
+  ],
+  "objective": [
+    "最小化完工时间",
+    "最小化总成本",
+    "最大化利用率",
+    "最小化能耗"
+  ],
+  "constraints": [
+    "任务唯一执行",
+    "机器人时间窗",
+    "电池容量",
+    "维护约束",
+    "碰撞避免"
+  ],
+  "characteristics": {
+    "domain": "Manufacturing Optimization",
+    "problemType": "Scheduling",
+    "decisionVariable": "Discrete",
+    "objective": "Single or Multi Objective",
+    "constraintLevel": "High",
+    "complexity": "NP-Hard",
+    "dynamicEnvironment": "Supported",
+    "industrialApplicability": "High"
+  },
+  "recommendedAlgorithms": [
+    "Adaptive Large Neighborhood Search (ALNS)",
+    "NSGA-II",
+    "Genetic Algorithm (GA)",
+    "Tabu Search"
+  ],
+  "recommendationStrategy": {
+    "Large-scale scheduling": "ALNS",
+    "Multi-objective optimization": "NSGA-II",
+    "General scheduling": "GA",
+    "Local search improvement": "Tabu Search"
+  }
+}

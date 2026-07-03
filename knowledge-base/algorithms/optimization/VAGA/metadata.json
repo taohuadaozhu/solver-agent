@@ -1,0 +1,22 @@
+{
+  "name": "VAGA",
+  "chineseName": "",
+  "description": "变异自适应遗传算法，依据种群方差动态调整交叉与变异概率，适合离散排列问题。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

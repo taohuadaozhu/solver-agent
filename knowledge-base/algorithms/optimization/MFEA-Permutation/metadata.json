@@ -1,0 +1,22 @@
+{
+  "name": "MFEA-Permutation",
+  "chineseName": "",
+  "description": "排列编码单任务多因子进化算法，使用序列交叉与插入变异。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

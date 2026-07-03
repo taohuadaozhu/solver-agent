@@ -1,0 +1,61 @@
+{
+  "name": "Production Planning",
+  "code": "PP",
+  "domain": "ERP",
+  "description": "生产计划案例，面向需求预测、库存和产能协调优化。",
+  "tags": [
+    "生产计划",
+    "ERP",
+    "库存优化",
+    "产能协调"
+  ],
+  "overview": "Production Planning optimizes production schedules, inventory and resource allocation to meet demand at minimal cost.",
+  "businessScenarios": [
+    "制造生产计划",
+    "库存补货策略",
+    "ERP排产",
+    "产能协调"
+  ],
+  "problemDescription": "根据需求和产能制定生产计划，控制库存和交付成本。",
+  "decisionVariables": [
+    "生产批量",
+    "生产顺序",
+    "库存水平",
+    "资源分配"
+  ],
+  "objective": [
+    "最小化生产成本",
+    "最小化库存持有",
+    "最小化缺货风险",
+    "最大化产能利用"
+  ],
+  "constraints": [
+    "产能限制",
+    "物料可用性",
+    "需求满足",
+    "库存容量",
+    "交货时间"
+  ],
+  "characteristics": {
+    "domain": "Production Optimization",
+    "problemType": "Planning",
+    "decisionVariable": "Discrete",
+    "objective": "Single or Multi Objective",
+    "constraintLevel": "Medium",
+    "complexity": "NP-Hard",
+    "dynamicEnvironment": "Supported",
+    "industrialApplicability": "High"
+  },
+  "recommendedAlgorithms": [
+    "Genetic Algorithm (GA)",
+    "NSGA-II",
+    "Mixed Integer Programming",
+    "Particle Swarm Optimization (PSO)"
+  ],
+  "recommendationStrategy": {
+    "Cost-sensitive planning": "MIP",
+    "Multi-objective planning": "NSGA-II",
+    "Flexible schedules": "GA",
+    "Capacity balancing": "PSO"
+  }
+}

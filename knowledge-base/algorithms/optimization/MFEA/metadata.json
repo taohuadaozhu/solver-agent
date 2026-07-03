@@ -1,0 +1,23 @@
+{
+  "name": "MFEA",
+  "chineseName": "",
+  "description": "MFEA 是多因子进化算法，适用于同构任务协同优化。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

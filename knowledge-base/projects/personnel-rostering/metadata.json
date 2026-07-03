@@ -1,0 +1,61 @@
+{
+  "name": "Personnel Rostering",
+  "code": "PR",
+  "domain": "人力资源",
+  "description": "人员排班案例，面向工时匹配、资格约束和班次平衡优化。",
+  "tags": [
+    "排班",
+    "人力资源",
+    "班次安排",
+    "员工调度"
+  ],
+  "overview": "Personnel Rostering assigns staff to shifts while respecting qualifications, labor rules, and coverage requirements.",
+  "businessScenarios": [
+    "医院排班",
+    "零售门店排班",
+    "呼叫中心",
+    "服务行业"
+  ],
+  "problemDescription": "分配员工到班次，满足技能、休假、连续工作和公平性等约束。",
+  "decisionVariables": [
+    "员工-班次分配",
+    "工作日程",
+    "休假安排",
+    "资格匹配"
+  ],
+  "objective": [
+    "最大化满意度",
+    "最小化加班成本",
+    "平衡工作量",
+    "满足服务水平"
+  ],
+  "constraints": [
+    "资格约束",
+    "工作时长限制",
+    "连班约束",
+    "休假要求",
+    "覆盖率约束"
+  ],
+  "characteristics": {
+    "domain": "Human Resource Optimization",
+    "problemType": "Scheduling",
+    "decisionVariable": "Discrete",
+    "objective": "Single or Multi Objective",
+    "constraintLevel": "High",
+    "complexity": "NP-Hard",
+    "dynamicEnvironment": "Supported",
+    "industrialApplicability": "Medium"
+  },
+  "recommendedAlgorithms": [
+    "Genetic Algorithm (GA)",
+    "NSGA-II",
+    "Local Search",
+    "Tabu Search"
+  ],
+  "recommendationStrategy": {
+    "Fairness and coverage": "NSGA-II",
+    "Qualification matching": "GA",
+    "Local improvement": "Local Search",
+    "Complex rules": "Tabu Search"
+  }
+}

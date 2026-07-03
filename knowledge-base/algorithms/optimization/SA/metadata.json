@@ -1,0 +1,23 @@
+{
+  "name": "SA",
+  "chineseName": "",
+  "description": "SA 是模拟退火算法，通过温度降低机制接受坏解以跳出局部最优。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

@@ -1,0 +1,540 @@
+[
+  {
+    "id": "job-shop-scheduling",
+    "path": "job-shop-scheduling",
+    "name": "Job Shop Scheduling",
+    "description": "作业车间调度案例，结合生产计划与资源分配优化。",
+    "metadata": {
+      "name": "Job Shop Scheduling",
+      "code": "JSP",
+      "domain": "制造业",
+      "description": "作业车间调度案例，结合生产计划与资源分配优化。",
+      "tags": [
+        "车间调度",
+        "制造业",
+        "生产计划",
+        "资源分配"
+      ],
+      "overview": "Job Shop Scheduling is a core manufacturing optimization problem where multiple jobs must be scheduled on machines with processing order constraints.",
+      "businessScenarios": [
+        "制造执行系统",
+        "车间生产计划",
+        "设备调度",
+        "订单处理"
+      ],
+      "problemDescription": "为生产工件分配机器和工序顺序，满足交期、设备可用性和资源冲突约束。",
+      "decisionVariables": [
+        "工件分配",
+        "加工顺序",
+        "开始时间",
+        "机床选择",
+        "交期控制"
+      ],
+      "objective": [
+        "最小化完工时间",
+        "最小化总延迟",
+        "最小化成本",
+        "最大化设备利用率"
+      ],
+      "constraints": [
+        "工序顺序约束",
+        "机床可用性",
+        "交期约束",
+        "资源容量",
+        "设置时间"
+      ],
+      "characteristics": {
+        "domain": "Manufacturing Optimization",
+        "problemType": "Scheduling",
+        "decisionVariable": "Discrete",
+        "objective": "Single or Multi Objective",
+        "constraintLevel": "High",
+        "complexity": "NP-Hard",
+        "dynamicEnvironment": "Supported",
+        "industrialApplicability": "High"
+      },
+      "recommendedAlgorithms": [
+        "Genetic Algorithm (GA)",
+        "NSGA-II",
+        "Tabu Search",
+        "Particle Swarm Optimization (PSO)"
+      ],
+      "recommendationStrategy": {
+        "Complex precedence constraints": "Tabu Search",
+        "Multi-objective scheduling": "NSGA-II",
+        "Flexible encoding": "GA"
+      }
+    }
+  },
+  {
+    "id": "network-design",
+    "path": "network-design",
+    "name": "Network Design",
+    "description": "网络设计案例，面向供应链优化与拓扑设计。",
+    "metadata": {
+      "name": "Network Design",
+      "code": "ND",
+      "domain": "供应链",
+      "description": "网络设计案例，面向供应链优化与拓扑设计。",
+      "tags": [
+        "网络设计",
+        "供应链",
+        "物流",
+        "设施布局"
+      ],
+      "overview": "Network Design determines the location, capacity and connections of logistics facilities to minimize total supply chain cost.",
+      "businessScenarios": [
+        "物流网络规划",
+        "仓储布局",
+        "供应链优化",
+        "配送中心选址"
+      ],
+      "problemDescription": "选择工厂、仓库和配送中心，并规划运输路径和库存配置，同时满足需求和成本约束。",
+      "decisionVariables": [
+        "设施选址",
+        "运输路径",
+        "库存分配",
+        "容量配置"
+      ],
+      "objective": [
+        "最小化总网络成本",
+        "最小化运输距离",
+        "最大化服务水平",
+        "最小化库存成本"
+      ],
+      "constraints": [
+        "需求满足",
+        "设施容量",
+        "运输能力",
+        "预算限制",
+        "交货时间窗口"
+      ],
+      "characteristics": {
+        "domain": "Supply Chain Optimization",
+        "problemType": "Network Design",
+        "decisionVariable": "Discrete",
+        "objective": "Single or Multi Objective",
+        "constraintLevel": "Medium",
+        "complexity": "NP-Hard",
+        "dynamicEnvironment": "Supported",
+        "industrialApplicability": "High"
+      },
+      "recommendedAlgorithms": [
+        "Mixed Integer Programming",
+        "Genetic Algorithm (GA)",
+        "Particle Swarm Optimization (PSO)",
+        "Ant Colony Optimization (ACO)"
+      ],
+      "recommendationStrategy": {
+        "Facility location": "MIP",
+        "Large-scale network design": "GA",
+        "Multi-objective trade-offs": "NSGA-II",
+        "Route optimization": "ACO"
+      }
+    }
+  },
+  {
+    "id": "personnel-rostering",
+    "path": "personnel-rostering",
+    "name": "Personnel Rostering",
+    "description": "人员排班案例，面向工时匹配、资格约束和班次平衡优化。",
+    "metadata": {
+      "name": "Personnel Rostering",
+      "code": "PR",
+      "domain": "人力资源",
+      "description": "人员排班案例，面向工时匹配、资格约束和班次平衡优化。",
+      "tags": [
+        "排班",
+        "人力资源",
+        "班次安排",
+        "员工调度"
+      ],
+      "overview": "Personnel Rostering assigns staff to shifts while respecting qualifications, labor rules, and coverage requirements.",
+      "businessScenarios": [
+        "医院排班",
+        "零售门店排班",
+        "呼叫中心",
+        "服务行业"
+      ],
+      "problemDescription": "分配员工到班次，满足技能、休假、连续工作和公平性等约束。",
+      "decisionVariables": [
+        "员工-班次分配",
+        "工作日程",
+        "休假安排",
+        "资格匹配"
+      ],
+      "objective": [
+        "最大化满意度",
+        "最小化加班成本",
+        "平衡工作量",
+        "满足服务水平"
+      ],
+      "constraints": [
+        "资格约束",
+        "工作时长限制",
+        "连班约束",
+        "休假要求",
+        "覆盖率约束"
+      ],
+      "characteristics": {
+        "domain": "Human Resource Optimization",
+        "problemType": "Scheduling",
+        "decisionVariable": "Discrete",
+        "objective": "Single or Multi Objective",
+        "constraintLevel": "High",
+        "complexity": "NP-Hard",
+        "dynamicEnvironment": "Supported",
+        "industrialApplicability": "Medium"
+      },
+      "recommendedAlgorithms": [
+        "Genetic Algorithm (GA)",
+        "NSGA-II",
+        "Local Search",
+        "Tabu Search"
+      ],
+      "recommendationStrategy": {
+        "Fairness and coverage": "NSGA-II",
+        "Qualification matching": "GA",
+        "Local improvement": "Local Search",
+        "Complex rules": "Tabu Search"
+      }
+    }
+  },
+  {
+    "id": "production-planning",
+    "path": "production-planning",
+    "name": "Production Planning",
+    "description": "生产计划案例，面向需求预测、库存和产能协调优化。",
+    "metadata": {
+      "name": "Production Planning",
+      "code": "PP",
+      "domain": "ERP",
+      "description": "生产计划案例，面向需求预测、库存和产能协调优化。",
+      "tags": [
+        "生产计划",
+        "ERP",
+        "库存优化",
+        "产能协调"
+      ],
+      "overview": "Production Planning optimizes production schedules, inventory and resource allocation to meet demand at minimal cost.",
+      "businessScenarios": [
+        "制造生产计划",
+        "库存补货策略",
+        "ERP排产",
+        "产能协调"
+      ],
+      "problemDescription": "根据需求和产能制定生产计划，控制库存和交付成本。",
+      "decisionVariables": [
+        "生产批量",
+        "生产顺序",
+        "库存水平",
+        "资源分配"
+      ],
+      "objective": [
+        "最小化生产成本",
+        "最小化库存持有",
+        "最小化缺货风险",
+        "最大化产能利用"
+      ],
+      "constraints": [
+        "产能限制",
+        "物料可用性",
+        "需求满足",
+        "库存容量",
+        "交货时间"
+      ],
+      "characteristics": {
+        "domain": "Production Optimization",
+        "problemType": "Planning",
+        "decisionVariable": "Discrete",
+        "objective": "Single or Multi Objective",
+        "constraintLevel": "Medium",
+        "complexity": "NP-Hard",
+        "dynamicEnvironment": "Supported",
+        "industrialApplicability": "High"
+      },
+      "recommendedAlgorithms": [
+        "Genetic Algorithm (GA)",
+        "NSGA-II",
+        "Mixed Integer Programming",
+        "Particle Swarm Optimization (PSO)"
+      ],
+      "recommendationStrategy": {
+        "Cost-sensitive planning": "MIP",
+        "Multi-objective planning": "NSGA-II",
+        "Flexible schedules": "GA",
+        "Capacity balancing": "PSO"
+      }
+    }
+  },
+  {
+    "id": "resource-allocation",
+    "path": "resource-allocation",
+    "name": "Resource Allocation",
+    "description": "资源分配案例，面向云计算与医院资源调度优化。",
+    "metadata": {
+      "name": "Resource Allocation",
+      "code": "RA",
+      "domain": "云计算/医院",
+      "description": "资源分配案例，面向云计算与医院资源调度优化。",
+      "tags": [
+        "资源分配",
+        "云计算",
+        "医院",
+        "调度"
+      ],
+      "overview": "Resource Allocation assigns limited resources to competing tasks or services to maximize utilization and service performance.",
+      "businessScenarios": [
+        "云计算资源调度",
+        "医院床位分配",
+        "设备预约管理",
+        "服务系统调度"
+      ],
+      "problemDescription": "在资源有限条件下，为任务或用户分配计算资源、人员或设备，并保持服务质量与负载均衡。",
+      "decisionVariables": [
+        "资源分配",
+        "任务调度",
+        "优先级排序",
+        "容量控制"
+      ],
+      "objective": [
+        "最大化资源利用",
+        "最小化等待时间",
+        "最小化服务成本",
+        "平衡负载"
+      ],
+      "constraints": [
+        "资源容量",
+        "服务等级",
+        "时间窗",
+        "兼容性",
+        "优先级约束"
+      ],
+      "characteristics": {
+        "domain": "Resource Optimization",
+        "problemType": "Allocation",
+        "decisionVariable": "Discrete",
+        "objective": "Single or Multi Objective",
+        "constraintLevel": "Medium",
+        "complexity": "NP-Hard",
+        "dynamicEnvironment": "Supported",
+        "industrialApplicability": "High"
+      },
+      "recommendedAlgorithms": [
+        "Genetic Algorithm (GA)",
+        "NSGA-II",
+        "Particle Swarm Optimization (PSO)",
+        "Ant Colony Optimization (ACO)"
+      ],
+      "recommendationStrategy": {
+        "Cloud scheduling": "PSO",
+        "Hospital allocation": "GA",
+        "Multi-objective service": "NSGA-II",
+        "Dynamic assignment": "ACO"
+      }
+    }
+  },
+  {
+    "id": "robot-scheduling",
+    "path": "robot-scheduling",
+    "name": "Robot Scheduling",
+    "description": "机器人调度优化案例，结合多目标算法选择与调度策略。",
+    "metadata": {
+      "name": "Robot Scheduling",
+      "code": "RS",
+      "domain": "制造业",
+      "description": "机器人调度优化案例，结合多目标算法选择与调度策略。",
+      "tags": [
+        "机器人",
+        "调度",
+        "制造业",
+        "生产调度",
+        "智能制造"
+      ],
+      "overview": "机器人调度是智能制造与自动化仓储中常见的组合优化问题，目标是在满足约束的前提下为机器人分配任务并优化执行顺序。",
+      "businessScenarios": [
+        "智能工厂",
+        "自动化仓储",
+        "AGV调度",
+        "AMR路径规划"
+      ],
+      "problemDescription": "为一组生产任务分配机器人资源，决定任务执行顺序、开始结束时间、路径和充电计划，同时满足设备和安全约束。",
+      "decisionVariables": [
+        "机器人分配",
+        "任务序列",
+        "开始时间",
+        "路径规划",
+        "充电决策"
+      ],
+      "objective": [
+        "最小化完工时间",
+        "最小化总成本",
+        "最大化利用率",
+        "最小化能耗"
+      ],
+      "constraints": [
+        "任务唯一执行",
+        "机器人时间窗",
+        "电池容量",
+        "维护约束",
+        "碰撞避免"
+      ],
+      "characteristics": {
+        "domain": "Manufacturing Optimization",
+        "problemType": "Scheduling",
+        "decisionVariable": "Discrete",
+        "objective": "Single or Multi Objective",
+        "constraintLevel": "High",
+        "complexity": "NP-Hard",
+        "dynamicEnvironment": "Supported",
+        "industrialApplicability": "High"
+      },
+      "recommendedAlgorithms": [
+        "Adaptive Large Neighborhood Search (ALNS)",
+        "NSGA-II",
+        "Genetic Algorithm (GA)",
+        "Tabu Search"
+      ],
+      "recommendationStrategy": {
+        "Large-scale scheduling": "ALNS",
+        "Multi-objective optimization": "NSGA-II",
+        "General scheduling": "GA",
+        "Local search improvement": "Tabu Search"
+      }
+    }
+  },
+  {
+    "id": "uav-routing",
+    "path": "uav-routing",
+    "name": "UAV Routing",
+    "description": "无人机路径规划案例，面向空中配送与路径优化。",
+    "metadata": {
+      "name": "UAV Routing",
+      "code": "UAVR",
+      "domain": "无人机",
+      "description": "无人机路径规划案例，面向空中配送与路径优化。",
+      "tags": [
+        "无人机",
+        "路径规划",
+        "UAV",
+        "航线优化"
+      ],
+      "overview": "UAV Routing optimizes flight paths and mission timing for unmanned aerial vehicles under energy and safety constraints.",
+      "businessScenarios": [
+        "无人机配送",
+        "巡检任务",
+        "空中摄影",
+        "应急投送"
+      ],
+      "problemDescription": "规划无人机起降点、飞行路径和任务顺序，满足飞行时间、载荷和空域限制。",
+      "decisionVariables": [
+        "航线选择",
+        "起降点",
+        "任务分配",
+        "飞行时间"
+      ],
+      "objective": [
+        "最小化飞行距离",
+        "最小化能耗",
+        "最大化任务完成",
+        "最小化总任务时长"
+      ],
+      "constraints": [
+        "电池容量",
+        "空域限制",
+        "载荷限制",
+        "时间窗",
+        "天气约束"
+      ],
+      "characteristics": {
+        "domain": "Aerial Routing Optimization",
+        "problemType": "Routing",
+        "decisionVariable": "Discrete",
+        "objective": "Single or Multi Objective",
+        "constraintLevel": "High",
+        "complexity": "NP-Hard",
+        "dynamicEnvironment": "Supported",
+        "industrialApplicability": "Medium"
+      },
+      "recommendedAlgorithms": [
+        "Genetic Algorithm (GA)",
+        "Ant Colony Optimization (ACO)",
+        "Particle Swarm Optimization (PSO)",
+        "NSGA-II"
+      ],
+      "recommendationStrategy": {
+        "No-fly zone routing": "ACO",
+        "Multi-objective planning": "NSGA-II",
+        "Energy-efficient routing": "PSO",
+        "Discrete assignment": "GA"
+      }
+    }
+  },
+  {
+    "id": "vehicle-routing-problem",
+    "path": "vehicle-routing-problem",
+    "name": "Vehicle Routing Problem",
+    "description": "车辆路径规划案例，面向配送、运力和时间窗约束优化。",
+    "metadata": {
+      "name": "Vehicle Routing Problem",
+      "code": "VRP",
+      "domain": "物流",
+      "description": "车辆路径规划案例，面向配送、运力和时间窗约束优化。",
+      "tags": [
+        "物流",
+        "路径规划",
+        "VRP",
+        "配送"
+      ],
+      "overview": "Vehicle Routing Problem optimizes delivery routes for a fleet of vehicles to serve customer demand under capacity and time-window constraints.",
+      "businessScenarios": [
+        "城市配送",
+        "快递物流",
+        "冷链运输",
+        "服务巡检"
+      ],
+      "problemDescription": "为车辆分配送货路线，满足客户需求、载量和时间窗限制，同时控制成本。",
+      "decisionVariables": [
+        "车辆路径",
+        "访问顺序",
+        "车辆选择",
+        "装载量"
+      ],
+      "objective": [
+        "最小化总距离",
+        "最小化配送时间",
+        "最小化车辆数量",
+        "平衡负载"
+      ],
+      "constraints": [
+        "车辆容量",
+        "时间窗口",
+        "驾驶时长",
+        "配送顺序",
+        "服务水平"
+      ],
+      "characteristics": {
+        "domain": "Logistics Optimization",
+        "problemType": "Routing",
+        "decisionVariable": "Discrete",
+        "objective": "Single or Multi Objective",
+        "constraintLevel": "High",
+        "complexity": "NP-Hard",
+        "dynamicEnvironment": "Supported",
+        "industrialApplicability": "High"
+      },
+      "recommendedAlgorithms": [
+        "Ant Colony Optimization (ACO)",
+        "Genetic Algorithm (GA)",
+        "Tabu Search",
+        "NSGA-II"
+      ],
+      "recommendationStrategy": {
+        "Capacitated routing": "ACO",
+        "Time-window routing": "Tabu Search",
+        "Multi-objective logistics": "NSGA-II",
+        "Flexible routing": "GA"
+      }
+    }
+  }
+]

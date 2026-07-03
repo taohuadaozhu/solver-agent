@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ANSGAIII Parameter Schema",
+  "type": "object",
+  "properties": {
+    "population_size": {
+      "type": "integer",
+      "minimum": 4,
+      "default": 100
+    },
+    "num_generations": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 200
+    },
+    "crossover_rate": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 0.9
+    },
+    "mutation_rate": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 0.1
+    }
+  },
+  "required": [
+    "population_size",
+    "num_generations"
+  ]
+}

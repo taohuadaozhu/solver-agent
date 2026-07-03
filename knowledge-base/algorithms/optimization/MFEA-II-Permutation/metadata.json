@@ -1,0 +1,22 @@
+{
+  "name": "MFEA-II-Permutation",
+  "chineseName": "",
+  "description": "自适应父代池与变异策略的序列 MFEA-II。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

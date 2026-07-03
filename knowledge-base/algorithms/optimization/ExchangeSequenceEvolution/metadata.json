@@ -1,0 +1,22 @@
+{
+  "name": "ExchangeSequenceEvolution",
+  "chineseName": "",
+  "description": "基于交换序的单目标离散优化方法，结合个体级别交换操作和局部搜索改进。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Metaheuristic"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

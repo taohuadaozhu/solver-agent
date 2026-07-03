@@ -1,0 +1,23 @@
+{
+  "name": "NELDER_MEAD",
+  "chineseName": "Nelder-Mead 单纯形法",
+  "description": "Nelder-Mead 是无梯度单纯形法，适用于连续、不可微优化问题。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Local Search"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}

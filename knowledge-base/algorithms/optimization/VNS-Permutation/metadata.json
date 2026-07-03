@@ -1,0 +1,22 @@
+{
+  "name": "VNS-Permutation",
+  "chineseName": "",
+  "description": "可变邻域搜索，在线切换邻域对排列解进行系统化探索。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Metaheuristic"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

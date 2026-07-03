@@ -1,0 +1,22 @@
+{
+  "name": "GA-OX-PM",
+  "chineseName": "",
+  "description": "Order Crossover + 修复的排列遗传算法，保留父代片段和相对顺序。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

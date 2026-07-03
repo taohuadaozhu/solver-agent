@@ -1,0 +1,22 @@
+{
+  "name": "DE-Permutation",
+  "chineseName": "",
+  "description": "序列变量差分进化变体，结合不同基向量策略处理排列问题。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

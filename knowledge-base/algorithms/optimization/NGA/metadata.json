@@ -1,0 +1,22 @@
+{
+  "name": "NGA",
+  "chineseName": "",
+  "description": "利用 niche 惩罚机制保持多样性的排列型遗传算法。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

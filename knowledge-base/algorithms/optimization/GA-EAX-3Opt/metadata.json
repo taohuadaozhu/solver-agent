@@ -1,0 +1,22 @@
+{
+  "name": "GA-EAX-3Opt",
+  "chineseName": "",
+  "description": "边组装交叉 + 3-opt 片段重组，提高旅行商类问题解的多样性。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

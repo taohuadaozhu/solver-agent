@@ -1,0 +1,22 @@
+{
+  "name": "GA-POX-KSwapKick",
+  "chineseName": "",
+  "description": "POX 交叉 + k 次 swap kick，用于摆脱局部最优。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Evolutionary"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

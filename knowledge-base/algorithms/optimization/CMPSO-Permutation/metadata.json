@@ -1,0 +1,22 @@
+{
+  "name": "CMPSO-Permutation",
+  "chineseName": "",
+  "description": "基于排列的 CMPSO，增加 Cauchy 变异以增强探索。",
+  "problemType": [
+    "Permutation Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Discrete"
+  ],
+  "algorithmFamily": [
+    "Swarm"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Logistics"
+  ]
+}

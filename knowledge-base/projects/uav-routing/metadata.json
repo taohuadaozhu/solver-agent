@@ -1,0 +1,61 @@
+{
+  "name": "UAV Routing",
+  "code": "UAVR",
+  "domain": "无人机",
+  "description": "无人机路径规划案例，面向空中配送与路径优化。",
+  "tags": [
+    "无人机",
+    "路径规划",
+    "UAV",
+    "航线优化"
+  ],
+  "overview": "UAV Routing optimizes flight paths and mission timing for unmanned aerial vehicles under energy and safety constraints.",
+  "businessScenarios": [
+    "无人机配送",
+    "巡检任务",
+    "空中摄影",
+    "应急投送"
+  ],
+  "problemDescription": "规划无人机起降点、飞行路径和任务顺序，满足飞行时间、载荷和空域限制。",
+  "decisionVariables": [
+    "航线选择",
+    "起降点",
+    "任务分配",
+    "飞行时间"
+  ],
+  "objective": [
+    "最小化飞行距离",
+    "最小化能耗",
+    "最大化任务完成",
+    "最小化总任务时长"
+  ],
+  "constraints": [
+    "电池容量",
+    "空域限制",
+    "载荷限制",
+    "时间窗",
+    "天气约束"
+  ],
+  "characteristics": {
+    "domain": "Aerial Routing Optimization",
+    "problemType": "Routing",
+    "decisionVariable": "Discrete",
+    "objective": "Single or Multi Objective",
+    "constraintLevel": "High",
+    "complexity": "NP-Hard",
+    "dynamicEnvironment": "Supported",
+    "industrialApplicability": "Medium"
+  },
+  "recommendedAlgorithms": [
+    "Genetic Algorithm (GA)",
+    "Ant Colony Optimization (ACO)",
+    "Particle Swarm Optimization (PSO)",
+    "NSGA-II"
+  ],
+  "recommendationStrategy": {
+    "No-fly zone routing": "ACO",
+    "Multi-objective planning": "NSGA-II",
+    "Energy-efficient routing": "PSO",
+    "Discrete assignment": "GA"
+  }
+}

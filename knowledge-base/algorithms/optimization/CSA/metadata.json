@@ -1,0 +1,23 @@
+{
+  "name": "CSA",
+  "chineseName": "鸡群算法",
+  "description": "CSA 是鸡群算法，基于群体协作与试探搜索实现连续优化。",
+  "problemType": [
+    "Continuous Optimization"
+  ],
+  "objectiveType": [
+    "Single Objective"
+  ],
+  "variableType": [
+    "Continuous"
+  ],
+  "algorithmFamily": [
+    "Swarm"
+  ],
+  "businessScenario": [
+    "Transportation",
+    "Scheduling",
+    "Energy",
+    "Manufacturing"
+  ]
+}
