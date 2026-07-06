@@ -1,0 +1,18 @@
+{
+  "name": "FT10 and FT20 Job Shop Scheduling Datasets",
+  "type": "dataset",
+  "domain": "制造业调度",
+  "problemType": "Job Shop Scheduling",
+  "format": "txt",
+  "size": "small-to-medium",
+  "description": "包含 FT10 和 FT20 两个经典 Job Shop Scheduling benchmark 实例，分别用于 10 工件和 20 工件的小中规模调度测试。",
+  "summary": "该数据集聚合了 FT10 和 FT20，对比测试调度算法在不同规模 JSP 问题中的表现。",
+  "sourcePath": "algorithm/MOEA_permutaition/data/ft10.txt",
+  "dataFiles": [
+    "algorithm/MOEA_permutaition/data/ft10.txt",
+    "algorithm/MOEA_permutaition/data/ft20.txt"
+  ],
+  "tags": ["JSP", "作业车间调度", "benchmark", "调度", "FT10", "FT20"],
+  "recommendedAlgorithms": ["GA", "ALNS", "Tabu Search", "Simulated Annealing"],
+  "usageScenarios": ["生产调度测试", "调度算法对比", "作业车间优化"]
+}

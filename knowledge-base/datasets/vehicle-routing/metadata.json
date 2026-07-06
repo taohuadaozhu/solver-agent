@@ -1,0 +1,15 @@
+{
+  "name": "A-n32-k5 CVRP Dataset",
+  "type": "dataset",
+  "domain": "物流运输",
+  "problemType": "Capacitated Vehicle Routing",
+  "format": "vrp",
+  "size": "small",
+  "description": "A-n32-k5 是一个经典 CVRP benchmark 实例，包含 32 个客户和 5 辆车辆，常用于路线优化测试。",
+  "summary": "该数据集适合验证物流与车载容量约束下的路径规划算法。",
+  "sourcePath": "algorithm/MOEA_permutaition/data/A-n32-k5.vrp",
+  "dataFiles": ["algorithm/MOEA_permutaition/data/A-n32-k5.vrp"],
+  "tags": ["CVRP", "车辆路径", "物流", "容量约束"],
+  "recommendedAlgorithms": ["GA", "PSO", "Tabu Search", "Ant Colony"],
+  "usageScenarios": ["物流配送规划", "车队路径优化", "容量受限路由"]
+}

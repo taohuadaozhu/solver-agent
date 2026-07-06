@@ -1,0 +1,15 @@
+{
+  "name": "Berlin52 TSP Dataset",
+  "type": "dataset",
+  "domain": "路径规划",
+  "problemType": "Traveling Salesman Problem",
+  "format": "tsp",
+  "size": "small",
+  "description": "Berlin52 是经典的旅行商问题 benchmark，包含 52 个城市，用于路径优化和距离最小化测试。",
+  "summary": "该数据集适合测试 TSP 算法在中等规模路由问题上的表现。",
+  "sourcePath": "algorithm/MOEA_permutaition/data/berlin52.tsp",
+  "dataFiles": ["algorithm/MOEA_permutaition/data/berlin52.tsp"],
+  "tags": ["TSP", "旅行商", "路径规划", "路由优化"],
+  "recommendedAlgorithms": ["GA", "Ant Colony", "Simulated Annealing", "Tabu Search"],
+  "usageScenarios": ["路径优化", "路线规划", "物流配送路径" ]
+}

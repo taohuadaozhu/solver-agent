@@ -1,0 +1,15 @@
+{
+  "name": "ORB01 Open Shop Scheduling Dataset",
+  "type": "dataset",
+  "domain": "生产调度",
+  "problemType": "Open Shop Scheduling",
+  "format": "txt",
+  "size": "small",
+  "description": "ORB01 是经典的开放车间调度 benchmark，适用于测试可任意顺序安排工序的调度算法。",
+  "summary": "该数据集用于评估开放式车间调度算法在资源分配和顺序优化上的性能。",
+  "sourcePath": "algorithm/MOEA_permutaition/data/orb01.txt",
+  "dataFiles": ["algorithm/MOEA_permutaition/data/orb01.txt"],
+  "tags": ["Open Shop", "调度", "生产计划", "资源分配"],
+  "recommendedAlgorithms": ["GA", "ALNS", "Tabu Search", "Local Search"],
+  "usageScenarios": ["开放车间调度", "生产计划优化", "并行工序调度"]
+}

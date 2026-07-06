@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import ChatPage from './ChatPage';
 
 const algorithmFilterKeys = [
   { key: 'problemType', label: '问题类型' },
@@ -15,7 +16,7 @@ const projectFilterKeys = [
 const routes = [
   { key: 'algorithms', label: '算法' },
   { key: 'projects', label: '案例' },
-  { key: 'llm', label: '大模型' },
+  { key: 'chat', label: '智能推荐' },
 ];
 
 function groupValues(items, key) {
@@ -111,12 +112,6 @@ function App() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [apiKey, setApiKey] = useState('');
-  const [model, setModel] = useState('gpt-3.5-turbo');
-  const [prompt, setPrompt] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [llmLoading, setLlmLoading] = useState(false);
-  const [llmError, setLlmError] = useState('');
 
   useEffect(() => {
     const hashPage = window.location.hash.replace('#/', '') || 'algorithms';
@@ -218,56 +213,11 @@ function App() {
     setPage(route);
   };
 
-  const handleSendPrompt = async () => {
-    setLlmError('');
-    if (!prompt.trim()) {
-      setLlmError('请先输入问题描述。');
-      return;
-    }
-    if (!apiKey.trim()) {
-      setLlmError('请在上方输入 OpenAI API Key 才能调用大模型。');
-      return;
-    }
-
-    const newMessages = [...messages, { role: 'user', content: prompt }];
-    setMessages(newMessages);
-    setPrompt('');
-    setLlmLoading(true);
-
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey.trim()}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'system', content: '你是一个算法助手。' }, ...newMessages],
-          max_tokens: 500,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.error?.message || '大模型调用失败');
-      }
-
-      const data = await response.json();
-      const assistantText = data.choices?.[0]?.message?.content || '未收到模型回复。';
-      setMessages((prev) => [...prev, { role: 'assistant', content: assistantText }]);
-    } catch (err) {
-      setLlmError(err.message);
-    } finally {
-      setLlmLoading(false);
-    }
-  };
-
   return (
     <div className="app-shell">
       <header>
         <h1>Solver Agent</h1>
-        <p>基于 `knowledge-base` 的算法与案例筛选平台。</p>
+        <p>基于 knowledge-base 的算法推荐与案例检索平台。</p>
       </header>
 
       <nav className="page-nav">
@@ -282,111 +232,66 @@ function App() {
         ))}
       </nav>
 
-      <section className="controls">
-        <div className="control-item">
-          <label>关键词搜索</label>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="输入算法、案例名或描述关键字"
-          />
-        </div>
-        {page === 'algorithms' &&
-          algorithmFilterKeys.map(({ key, label }) => (
-            <FilterSelect
-              key={key}
-              label={label}
-              value={filters[key]}
-              options={filterOptions.algorithm[key] || []}
-              onChange={(value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-            />
-          ))}
-        {page === 'projects' &&
-          projectFilterKeys.map(({ key, label }) => (
-            <FilterSelect
-              key={key}
-              label={label}
-              value={projectFilters[key]}
-              options={filterOptions.project[key] || []}
-              onChange={(value) => setProjectFilters((prev) => ({ ...prev, [key]: value }))}
-            />
-          ))}
-      </section>
-
-      <section className="result-count">
-        {page === 'algorithms'
-          ? `${filteredAlgorithms.length} / ${algorithms.length} 条算法结果`
-          : page === 'projects'
-          ? `${filteredProjects.length} / ${projects.length} 条案例结果`
-          : '大模型交互页面'}
-      </section>
-
-      {page === 'llm' ? (
-        <section className="llm-page">
-          <div className="llm-config">
-            <div className="control-item">
-              <label>OpenAI API Key</label>
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(event) => setApiKey(event.target.value)}
-                placeholder="输入 OpenAI API Key"
-              />
-            </div>
-            <div className="control-item">
-              <label>模型</label>
-              <select value={model} onChange={(event) => setModel(event.target.value)}>
-                <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
-                <option value="gpt-4o-mini">gpt-4o-mini</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="chat-container">
-            <div className="chat-messages">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`message ${message.role === 'user' ? 'message-user' : 'message-assistant'}`}
-                >
-                  <div className="message-role">{message.role === 'user' ? '用户' : '助手'}</div>
-                  <div>{message.content}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="chat-input-area">
-              <textarea
-                value={prompt}
-                onChange={(event) => setPrompt(event.target.value)}
-                placeholder="输入你想问大模型的问题，例如：推荐一个适合机器人调度的多目标优化算法。"
-              />
-              <button onClick={handleSendPrompt} disabled={llmLoading}>
-                {llmLoading ? '发送中...' : '发送'}
-              </button>
-            </div>
-            {llmError && <div className="no-results">{llmError}</div>}
-          </div>
-        </section>
+      {page === 'chat' ? (
+        <ChatPage />
       ) : (
-        <section className="algorithm-list">
-          {loading && <div className="no-results">正在加载数据...</div>}
-          {error && <div className="no-results">{error}</div>}
+        <>
+          <section className="controls">
+            <div className="control-item">
+              <label>关键词搜索</label>
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="输入算法、案例名或描述关键字"
+              />
+            </div>
+            {page === 'algorithms' &&
+              algorithmFilterKeys.map(({ key, label }) => (
+                <FilterSelect
+                  key={key}
+                  label={label}
+                  value={filters[key]}
+                  options={filterOptions.algorithm[key] || []}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+                />
+              ))}
+            {page === 'projects' &&
+              projectFilterKeys.map(({ key, label }) => (
+                <FilterSelect
+                  key={key}
+                  label={label}
+                  value={projectFilters[key]}
+                  options={filterOptions.project[key] || []}
+                  onChange={(value) => setProjectFilters((prev) => ({ ...prev, [key]: value }))}
+                />
+              ))}
+          </section>
 
-          {!loading && !error && page === 'algorithms' && filteredAlgorithms.length === 0 && (
-            <div className="no-results">未找到匹配的算法，请修改筛选条件。</div>
-          )}
-          {!loading && !error && page === 'projects' && filteredProjects.length === 0 && (
-            <div className="no-results">未找到匹配的案例，请修改搜索关键词。</div>
-          )}
+          <section className="result-count">
+            {page === 'algorithms'
+              ? `${filteredAlgorithms.length} / ${algorithms.length} 条算法结果`
+              : `${filteredProjects.length} / ${projects.length} 条案例结果`}
+          </section>
 
-          {!loading && !error && page === 'algorithms' && filteredAlgorithms.map((algorithm) => (
-            <AlgorithmCard key={algorithm.id} algorithm={algorithm} />
-          ))}
-          {!loading && !error && page === 'projects' && filteredProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </section>
+          <section className="algorithm-list">
+            {loading && <div className="no-results">正在加载数据...</div>}
+            {error && <div className="no-results">{error}</div>}
+
+            {!loading && !error && page === 'algorithms' && filteredAlgorithms.length === 0 && (
+              <div className="no-results">未找到匹配的算法，请修改筛选条件。</div>
+            )}
+            {!loading && !error && page === 'projects' && filteredProjects.length === 0 && (
+              <div className="no-results">未找到匹配的案例，请修改搜索关键词。</div>
+            )}
+
+            {!loading && !error && page === 'algorithms' && filteredAlgorithms.map((algorithm) => (
+              <AlgorithmCard key={algorithm.id} algorithm={algorithm} />
+            ))}
+            {!loading && !error && page === 'projects' && filteredProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </section>
+        </>
       )}
     </div>
   );

@@ -1,0 +1,15 @@
+{
+  "name": "SWV01 Flow Shop Scheduling Dataset",
+  "type": "dataset",
+  "domain": "生产调度",
+  "problemType": "Flow Shop Scheduling",
+  "format": "txt",
+  "size": "small",
+  "description": "SWV01 是典型的流水车间调度 benchmark，用于测试机器顺序固定情况下的调度算法。",
+  "summary": "该数据集适合评估流水线调度算法在最小化完工时间方面的表现。",
+  "sourcePath": "algorithm/MOEA_permutaition/data/swv01.txt",
+  "dataFiles": ["algorithm/MOEA_permutaition/data/swv01.txt"],
+  "tags": ["Flow Shop", "流水车间", "调度", "生产计划"],
+  "recommendedAlgorithms": ["GA", "ALNS", "Tabu Search", "NEH"],
+  "usageScenarios": ["流水车间调度", "生产效率优化", "完工时间最小化"]
+}
