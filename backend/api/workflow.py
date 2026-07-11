@@ -20,6 +20,8 @@ from pydantic import BaseModel, Field
 from backend.agent.workflow import (
     run_step,
     run_workflow,
+    start_workflow,
+    continue_workflow,
     WorkflowState,
     WORKFLOW_STEPS,
 )
@@ -27,6 +29,16 @@ from backend.agent.tools import TOOLS, call_tool
 from backend.agent.visualizer import generate_chart
 from backend.agent.executor import execute_solver, load_dataset
 from backend.llm.openai_client import chat_completion
+from backend.memory.store import (
+    create_conversation,
+    list_conversations,
+    delete_conversation,
+    add_message,
+    get_messages,
+    save_workflow,
+    get_workflow,
+    list_workflows,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -62,6 +74,30 @@ class ExecuteRequest(BaseModel):
     algorithm: str
     dataset_name: str
     parameters: Optional[dict] = Field(default_factory=dict)
+
+
+class ContinueRequest(BaseModel):
+    query: str = Field(..., min_length=1)
+    selected_dataset: str = Field(..., min_length=1)
+    state_json: str = Field(..., description="Serialized WorkflowState from /workflow/start")
+
+
+class SaveMessageRequest(BaseModel):
+    conversation_id: str
+    role: str = Field(..., pattern="^(user|assistant|system)$")
+    content: str = Field(..., min_length=1)
+
+
+class SaveWorkflowRequest(BaseModel):
+    conversation_id: str
+    problem: str
+    state_json: str
+    step_outputs: dict = Field(default_factory=dict)
+    status: str = "in_progress"
+
+
+class ConversationCreateRequest(BaseModel):
+    title: str = ""
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────
@@ -159,9 +195,111 @@ async def handle_tool_call(req: dict):
     return result
 
 
+@app.post("/workflow/start")
+async def start_analysis(req: WorkflowRequest):
+    """Run STEP_1 problem understanding + return dataset options for user selection."""
+    start = time.perf_counter()
+    logger.info("Starting analysis for: %.80s...", req.query)
+
+    try:
+        result = await start_workflow(req.query)
+    except Exception:
+        logger.exception("Start workflow failed")
+        raise HTTPException(status_code=502, detail="Analysis failed")
+
+    elapsed = (time.perf_counter() - start) * 1000
+
+    return {
+        "analysis": result["analysis"],
+        "datasets": result["datasets"],
+        "state": result["state"],
+        "elapsed_ms": round(elapsed, 1),
+    }
+
+
+@app.post("/workflow/continue")
+async def continue_analysis(req: ContinueRequest):
+    """Continue workflow from STEP_2 with user-selected dataset, run through STEP_7."""
+    start = time.perf_counter()
+    logger.info("Continuing workflow with dataset=%s", req.selected_dataset)
+
+    try:
+        state_data = json.loads(req.state_json)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid state_json")
+
+    try:
+        state = await continue_workflow(state_data, req.selected_dataset, req.query)
+    except Exception:
+        logger.exception("Continue workflow failed")
+        raise HTTPException(status_code=502, detail="Workflow continuation failed")
+
+    elapsed = (time.perf_counter() - start) * 1000
+
+    return {
+        "state": state.to_dict(),
+        "elapsed_ms": round(elapsed, 1),
+    }
+
+
+# ── Memory / Conversation ─────────────────────────────────────────────────
+
+@app.post("/memory/conversations")
+async def new_conversation(req: ConversationCreateRequest):
+    conv_id = create_conversation(req.title)
+    return {"conversation_id": conv_id}
+
+
+@app.get("/memory/conversations")
+async def get_conversations():
+    return {"conversations": list_conversations()}
+
+
+@app.delete("/memory/conversations/{conv_id}")
+async def remove_conversation(conv_id: str):
+    delete_conversation(conv_id)
+    return {"status": "deleted"}
+
+
+@app.post("/memory/messages")
+async def save_message(req: SaveMessageRequest):
+    add_message(req.conversation_id, req.role, req.content)
+    return {"status": "saved"}
+
+
+@app.get("/memory/conversations/{conv_id}/messages")
+async def load_messages(conv_id: str):
+    return {"messages": get_messages(conv_id)}
+
+
+# ── Memory / Workflow ─────────────────────────────────────────────────────
+
+
+@app.post("/memory/workflows")
+async def persist_workflow(req: SaveWorkflowRequest):
+    state = json.loads(req.state_json)
+    wf_id = save_workflow(req.conversation_id, req.problem, state, req.step_outputs, req.status)
+    return {"workflow_id": wf_id}
+
+
+@app.get("/memory/workflows/{wf_id}")
+async def load_workflow(wf_id: str):
+    wf = get_workflow(wf_id)
+    if not wf:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return wf
+
+
+@app.get("/memory/conversations/{conv_id}/workflows")
+async def conversation_workflows(conv_id: str):
+    return {"workflows": list_workflows(conv_id)}
+
+
+# ── Health ─────────────────────────────────────────────────────────────────
+
 @app.get("/workflow/health")
 async def health():
-    return {"status": "ok", "version": "0.2.0", "steps": WORKFLOW_STEPS}
+    return {"status": "ok", "version": "0.4.0", "steps": WORKFLOW_STEPS}
 
 
 if __name__ == "__main__":

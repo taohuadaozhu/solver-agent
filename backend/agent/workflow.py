@@ -181,3 +181,40 @@ async def run_workflow(user_query: str) -> WorkflowState:
         await run_step(step, state, user_query)
 
     return state
+
+
+async def start_workflow(user_query: str) -> dict:
+    """Run STEP_1 only, then search datasets via RAG. Returns analysis + dataset options for user selection."""
+    state = WorkflowState(problem=user_query)
+
+    # STEP_1: Problem understanding
+    analysis = await run_step("STEP_1_PROBLEM", state, user_query)
+
+    # RAG search for dataset options
+    dataset_docs = await rag_search(f"dataset for {user_query}", top_k=10, doc_type="datasets")
+
+    return {
+        "analysis": analysis,
+        "datasets": dataset_docs,
+        "state": state.to_dict(),
+    }
+
+
+async def continue_workflow(state_dict: dict, selected_dataset: str, user_query: str) -> WorkflowState:
+    """Continue workflow from STEP_2 with a user-selected dataset, then run through STEP_7."""
+    state = WorkflowState(
+        problem=state_dict.get("problem", user_query),
+        dataset_name=selected_dataset,
+        step_results=state_dict.get("step_results", {}),
+    )
+
+    for step in WORKFLOW_STEPS:
+        if step == "STEP_1_PROBLEM":
+            continue  # Already done
+        if step == "STEP_2_DATASET":
+            # Use user-selected dataset instead of RAG
+            state.step_results[step] = f"User selected dataset: {selected_dataset}"
+            continue
+        await run_step(step, state, user_query)
+
+    return state
