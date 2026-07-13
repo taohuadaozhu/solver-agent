@@ -6,6 +6,13 @@ STEP_PROMPTS = {
         "Please read the user's problem description and extract the core optimization task.\n"
         "Ask for the domain, key actors, resources, and the main performance challenge.\n"
         "If the description is unclear, request a concise problem statement with concrete constraints.\n"
+        "\n"
+        "At the end of your response, append a JSON block on its own line that marks which\n"
+        "information the user has ALREADY provided. Use exactly this format:\n"
+        "```coverage\n"
+        '{"variables": true/false, "objectives": true/false, "constraints": true/false}\n'
+        "```\n"
+        "Mark true only if the information is explicitly stated in the user's input.\n"
     ),
     "STEP_2_DATASET": (
         "STEP 2 — DATASET SELECTION:\n"

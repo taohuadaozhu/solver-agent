@@ -78,15 +78,52 @@ function WorkflowPanel({ query, onDone, saveWorkflow }) {
   const [execResult, setExecResult] = useState(null);
   const [charts, setCharts] = useState([]);
   const [error, setError] = useState('');
+  const [skipSteps, setSkipSteps] = useState([]);
   const stateRef = useRef(null);
   const dsRef = useRef('');
 
   useEffect(() => { stateRef.current = state; }, [state]);
   useEffect(() => { dsRef.current = selectedDataset; }, [selectedDataset]);
 
-  // Auto-run STEP_1 on mount
+  // Auto-run STEP_1 on mount via /workflow/start (returns coverage info)
   useEffect(() => {
-    runStep('STEP_1_PROBLEM', query);
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_WORKFLOW}/workflow/start`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query }),
+        });
+        if (!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        setState(data.state);
+        setOutput((prev) => ({ ...prev, STEP_1_PROBLEM: data.analysis }));
+        setCompleted((prev) => new Set([...prev, 'STEP_1_PROBLEM']));
+        if (data.datasets?.length > 0) {
+          setDatasets(data.datasets);
+          setSelectedDataset(data.datasets[0].name);
+        }
+        // Handle step skipping: auto-fill pre-covered steps
+        const skips = data.skip_steps || [];
+        setSkipSteps(skips);
+        if (skips.length > 0) {
+          const newOutput = { STEP_1_PROBLEM: data.analysis };
+          const newCompleted = new Set(['STEP_1_PROBLEM']);
+          const skipLabels = {
+            STEP_3_VARIABLE: '(Pre-filled: variables already described in query)',
+            STEP_4_OBJECTIVE: '(Pre-filled: objectives already described in query)',
+            STEP_5_CONSTRAINT: '(Pre-filled: constraints already described in query)',
+          };
+          for (const s of skips) {
+            newOutput[s] = skipLabels[s] || '(Auto-filled)';
+            newCompleted.add(s);
+          }
+          setOutput(newOutput);
+          setCompleted(newCompleted);
+        }
+      } catch (e) { setError(e.message); }
+      finally { setLoading(false); }
+    })();
   }, []);
 
   const runStep = async (step, extraInput) => {
@@ -94,7 +131,7 @@ function WorkflowPanel({ query, onDone, saveWorkflow }) {
     setError('');
     try {
       const body = { step, query };
-      if (state) body.state_json = JSON.stringify(state);
+      if (stateRef.current) body.state_json = JSON.stringify(stateRef.current);
       if (extraInput) body.query = extraInput;
 
       const res = await fetch(`${API_WORKFLOW}/workflow/step`, {
@@ -151,27 +188,59 @@ function WorkflowPanel({ query, onDone, saveWorkflow }) {
     if (showDatasetPicker) {
       const ds = dsRef.current;
       if (!ds) return;
-      const nextStep = 'STEP_3_VARIABLE';
       setState((prev) => ({ ...prev, dataset_name: ds }));
       setOutput((prev) => ({ ...prev, STEP_2_DATASET: `Selected: ${ds}` }));
       setCompleted((prev) => new Set([...prev, 'STEP_2_DATASET']));
-      setCurrentStep(nextStep);
       setLoading(true);
-      const merged = JSON.stringify({ ...(stateRef.current || {}), dataset_name: ds });
-      (async () => {
-        try {
-          const res = await fetch(`${API_WORKFLOW}/workflow/step`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ step: nextStep, query, state_json: merged }),
-          });
-          if (!res.ok) throw new Error('Failed');
-          const data = await res.json();
-          setState(data.state);
-          setOutput((prev) => ({ ...prev, [nextStep]: data.response }));
-          setCompleted((prev) => new Set([...prev, nextStep]));
-        } catch (e) { setError(e.message); }
-        finally { setLoading(false); }
-      })();
+
+      if (skipSteps.length > 0) {
+        // Use auto-continue to fill skipped steps + run remaining
+        const merged = JSON.stringify({ ...(stateRef.current || {}), dataset_name: ds });
+        (async () => {
+          try {
+            const res = await fetch(`${API_WORKFLOW}/workflow/auto-continue`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query, selected_dataset: ds, state_json: merged, skip_steps: skipSteps }),
+            });
+            if (!res.ok) throw new Error('Failed');
+            const data = await res.json();
+            setState(data.state);
+            const newOutput = { ...output, STEP_2_DATASET: `Selected: ${ds}` };
+            const newDone = new Set(completed);
+            newDone.add('STEP_2_DATASET');
+            // Mark remaining steps from auto-continue
+            for (const s of ['STEP_3_VARIABLE', 'STEP_4_OBJECTIVE', 'STEP_5_CONSTRAINT', 'STEP_6_CLASSIFY', 'STEP_7_ALGO']) {
+              if (data.state.step_results?.[s]) {
+                if (!skipSteps.includes(s)) newOutput[s] = data.state.step_results[s];
+                newDone.add(s);
+              }
+            }
+            setOutput(newOutput);
+            setCompleted(newDone);
+            setCurrentStep('STEP_7_ALGO');
+          } catch (e) { setError(e.message); }
+          finally { setLoading(false); }
+        })();
+      } else {
+        // Normal flow: run STEP_3
+        const nextStep = 'STEP_3_VARIABLE';
+        setCurrentStep(nextStep);
+        const merged = JSON.stringify({ ...(stateRef.current || {}), dataset_name: ds });
+        (async () => {
+          try {
+            const res = await fetch(`${API_WORKFLOW}/workflow/step`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ step: nextStep, query, state_json: merged }),
+            });
+            if (!res.ok) throw new Error('Failed');
+            const data = await res.json();
+            setState(data.state);
+            setOutput((prev) => ({ ...prev, [nextStep]: data.response }));
+            setCompleted((prev) => new Set([...prev, nextStep]));
+          } catch (e) { setError(e.message); }
+          finally { setLoading(false); }
+        })();
+      }
       return;
     }
 
