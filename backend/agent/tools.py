@@ -80,10 +80,12 @@ TOOLS = [
     },
 ]
 
+from backend.agent.visualizer import generate_chart
+
 TOOL_HANDLERS = {
     "load_dataset": load_dataset,
     "execute_solver": execute_solver,
-    "generate_chart": None,  # handled separately
+    "generate_chart": generate_chart,
 }
 
 

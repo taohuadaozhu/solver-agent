@@ -860,3 +860,202 @@ header p {
   background: var(--primary);
   color: #fff;
 }
+
+/* ── Agent Panel ───────────────────────────────────────────────── */
+
+.agent-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agent-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agent-event {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.86rem;
+}
+
+.agent-event-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.thinking-event {
+  color: var(--muted);
+  padding: 4px 0;
+}
+
+.agent-event-text {
+  line-height: 1.5;
+}
+
+/* Tool call card */
+.tool-calls-event {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tool-call-card {
+  background: #f8fafc;
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tool-call-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  list-style: none;
+}
+
+.tool-call-summary::-webkit-details-marker {
+  display: none;
+}
+
+.tool-call-summary::before {
+  content: '▶';
+  font-size: 0.6rem;
+  margin-right: 2px;
+  transition: transform 0.2s;
+  color: var(--muted);
+}
+
+.tool-call-card[open] .tool-call-summary::before {
+  transform: rotate(90deg);
+}
+
+.tool-call-name {
+  color: var(--text);
+}
+
+.tool-call-algo {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-radius: 4px;
+  padding: 1px 8px;
+  font-size: 0.78rem;
+}
+
+.tool-call-ds {
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 4px;
+  padding: 1px 8px;
+  font-size: 0.78rem;
+  margin-left: auto;
+}
+
+.tool-call-args {
+  margin: 0;
+  padding: 10px 14px;
+  background: #f1f5f9;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: pre-wrap;
+  border-top: 1px solid #e2e8f0;
+  overflow-x: auto;
+}
+
+/* Tool result card */
+.tool-result-event {
+  flex-direction: column;
+}
+
+.tool-result-card {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tool-result-card.result-ok {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.tool-result-card.result-err {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.tool-result-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.84rem;
+  font-weight: 500;
+  list-style: none;
+}
+
+.tool-result-summary::-webkit-details-marker {
+  display: none;
+}
+
+.tool-result-summary::before {
+  content: '▶';
+  font-size: 0.6rem;
+  margin-right: 2px;
+  transition: transform 0.2s;
+  color: var(--muted);
+}
+
+.tool-result-card[open] .tool-result-summary::before {
+  transform: rotate(90deg);
+}
+
+.tool-result-label {
+  color: var(--text);
+}
+
+.tool-result-metric {
+  background: #fff;
+  border-radius: 4px;
+  padding: 1px 8px;
+  font-size: 0.76rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.tool-result-data {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: pre-wrap;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff80;
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Agent final answer */
+.agent-final-answer {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-top: 4px;
+}
+
+.agent-final-answer .answer-text {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}

@@ -25,6 +25,7 @@ if not OPENAI_API_KEY:
 
 EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL", "gpt-4.1")
+CHAT_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", "0.3"))
 
 REQUEST_TIMEOUT = float(os.getenv("OPENAI_TIMEOUT", "30.0"))
 MAX_RETRIES = int(os.getenv("OPENAI_MAX_RETRIES", "3"))
@@ -92,9 +93,30 @@ async def chat_completion(
             {"role": "system", "content": system},
             {"role": "user", "content": prompt},
         ],
+        temperature=CHAT_TEMPERATURE,
         **kwargs,
     )
     return response.choices[0].message.content
+
+
+async def chat_completion_with_tools(
+    messages: list,
+    tools: list,
+    model: str = CHAT_MODEL,
+    **kwargs,
+) -> dict:
+    """Chat completion with tool calling support. Returns the full message object."""
+    logger.debug("Chat completion with tools, model=%s, %d messages", model, len(messages))
+    client = _get_client()
+    response = await client.chat.completions.create(
+        model=model,
+        messages=messages,
+        tools=tools,
+        tool_choice="auto",
+        temperature=CHAT_TEMPERATURE,
+        **kwargs,
+    )
+    return response.choices[0].message
 
 
 async def chat_completion_stream(
@@ -113,6 +135,7 @@ async def chat_completion_stream(
             {"role": "user", "content": prompt},
         ],
         stream=True,
+        temperature=CHAT_TEMPERATURE,
         **kwargs,
     )
     async for chunk in stream:
