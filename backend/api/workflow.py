@@ -12,7 +12,7 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -22,6 +22,7 @@ from backend.agent.workflow import (
     run_workflow,
     start_workflow,
     continue_workflow,
+    stream_workflow_continue,
     WorkflowState,
     WORKFLOW_STEPS,
 )
@@ -156,13 +157,16 @@ async def execute_algorithm(req: ExecuteRequest):
     logger.info("Executing %s on %s", req.algorithm, req.dataset_name)
 
     loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(
+    output = await loop.run_in_executor(
         None,
         execute_solver,
         req.algorithm,
         req.dataset_name,
         req.parameters,
     )
+
+    result = output.get("execution", output)
+    validation = output.get("validation", {})
 
     chart = None
     if result.get("convergence_curve"):
@@ -174,6 +178,7 @@ async def execute_algorithm(req: ExecuteRequest):
 
     return {
         "execution": result,
+        "validation": validation,
         "chart": chart,
     }
 
@@ -294,6 +299,43 @@ async def auto_continue_analysis(req: ContinueRequest):
         "state": state.to_dict(),
         "elapsed_ms": round(elapsed, 1),
     }
+
+
+# ── SSE Streaming ──────────────────────────────────────────────────────────
+
+@app.post("/workflow/stream")
+async def stream_continue(req: ContinueRequest):
+    """SSE streaming endpoint — pushes step_start, step_chunk, step_done, done events."""
+
+    try:
+        state_data = json.loads(req.state_json)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid state_json")
+
+    async def event_generator():
+        try:
+            async for event_str in stream_workflow_continue(
+                req.query, req.selected_dataset, state_data, req.skip_steps or [],
+            ):
+                yield event_str
+        except Exception as e:
+            logger.exception("Stream failed")
+            yield _sse_str("error", {"error": str(e)})
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
+
+
+def _sse_str(event: str, data: dict) -> str:
+    """Format a dict as an SSE message string."""
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
 # ── Memory / Conversation ─────────────────────────────────────────────────

@@ -5,7 +5,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from backend.llm.openai_client import chat_completion
+from backend.llm.openai_client import chat_completion, chat_completion_stream
 from backend.llm.prompt import (
     STEP_PROMPTS,
     step1_handler,
@@ -226,6 +226,90 @@ async def start_workflow(user_query: str) -> dict:
         "coverage": coverage,
         "skip_steps": skip_steps,
     }
+
+
+async def stream_workflow_continue(
+    query: str,
+    selected_dataset: str,
+    state_dict: dict,
+    skip_steps: List[str],
+    system_prompt: str = "You are an optimization expert. Answer concisely in Chinese.",
+):
+    """Async generator that yields SSE events for each remaining workflow step."""
+
+    state = WorkflowState(problem=query, dataset_name=selected_dataset,
+                          step_results=state_dict.get("step_results", {}))
+
+    # STEP_2 (dataset selected)
+    state.step_results["STEP_2_DATASET"] = f"User selected dataset: {selected_dataset}"
+    state.dataset_name = selected_dataset
+    yield _sse("step_done", {"step": "STEP_2_DATASET", "output": f"Dataset: {selected_dataset}"})
+
+    skip_set = set(skip_steps)
+
+    # Pre-fill skipped steps
+    skip_labels = {
+        "STEP_3_VARIABLE": "Variables already described in query.",
+        "STEP_4_OBJECTIVE": "Objectives already described in query.",
+        "STEP_5_CONSTRAINT": "Constraints already described in query.",
+    }
+    for s in skip_set:
+        state.step_results[s] = skip_labels.get(s, "Pre-filled from query.")
+        yield _sse("step_done", {"step": s, "output": skip_labels.get(s, ""), "skipped": True})
+
+    # Remaining steps with streaming LLM
+    remaining = [s for s in ["STEP_3_VARIABLE", "STEP_4_OBJECTIVE", "STEP_5_CONSTRAINT", "STEP_6_CLASSIFY", "STEP_7_ALGO"]
+                 if s not in skip_set]
+
+    handler_map = {
+        "STEP_1_PROBLEM": step1_handler,
+        "STEP_3_VARIABLE": step3_handler,
+        "STEP_4_OBJECTIVE": step4_handler,
+        "STEP_5_CONSTRAINT": step5_handler,
+        "STEP_6_CLASSIFY": step6_handler,
+        "STEP_7_ALGO": step7_handler,
+    }
+
+    for step in remaining:
+        yield _sse("step_start", {"step": step})
+
+        # Run RAG if needed
+        if step == "STEP_7_ALGO" and state.classification:
+            docs = await rag_search(
+                f"{state.classification} {', '.join(state.objectives)}",
+                top_k=5, doc_type="algorithms",
+            )
+            docs = [d for d in docs if "example" not in d.get("name", "").lower()]
+            state.rag_docs.extend(docs)
+            if docs:
+                state.recommended_algorithm = docs[0]["name"]
+
+        context = state.to_context()
+        if step == "STEP_1_PROBLEM":
+            context["problem"] = query
+
+        handler = handler_map[step]
+        prompt = handler(context)
+
+        # Stream LLM response
+        full = []
+        async for token in chat_completion_stream(prompt, system=system_prompt):
+            full.append(token)
+            yield _sse("step_chunk", {"step": step, "text": token})
+
+        output = "".join(full)
+        state.step_results[step] = output
+        _parse_step_output(step, output, state)
+
+        yield _sse("step_done", {"step": step, "output": output})
+
+    # Done
+    yield _sse("done", {"state": state.to_dict()})
+
+
+def _sse(event: str, data: dict) -> str:
+    """Format a dict as an SSE message string."""
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
 async def continue_workflow(state_dict: dict, selected_dataset: str, user_query: str) -> WorkflowState:

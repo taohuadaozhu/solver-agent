@@ -193,54 +193,88 @@ function WorkflowPanel({ query, onDone, saveWorkflow }) {
       setCompleted((prev) => new Set([...prev, 'STEP_2_DATASET']));
       setLoading(true);
 
-      if (skipSteps.length > 0) {
-        // Use auto-continue to fill skipped steps + run remaining
-        const merged = JSON.stringify({ ...(stateRef.current || {}), dataset_name: ds });
-        (async () => {
-          try {
-            const res = await fetch(`${API_WORKFLOW}/workflow/auto-continue`, {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ query, selected_dataset: ds, state_json: merged, skip_steps: skipSteps }),
-            });
-            if (!res.ok) throw new Error('Failed');
-            const data = await res.json();
-            setState(data.state);
-            const newOutput = { ...output, STEP_2_DATASET: `Selected: ${ds}` };
-            const newDone = new Set(completed);
-            newDone.add('STEP_2_DATASET');
-            // Mark remaining steps from auto-continue
-            for (const s of ['STEP_3_VARIABLE', 'STEP_4_OBJECTIVE', 'STEP_5_CONSTRAINT', 'STEP_6_CLASSIFY', 'STEP_7_ALGO']) {
-              if (data.state.step_results?.[s]) {
-                if (!skipSteps.includes(s)) newOutput[s] = data.state.step_results[s];
-                newDone.add(s);
+      const merged = JSON.stringify({ ...(stateRef.current || {}), dataset_name: ds });
+      const body = JSON.stringify({ query, selected_dataset: ds, state_json: merged, skip_steps: skipSteps });
+
+      // SSE streaming via fetch + ReadableStream
+      (async () => {
+        try {
+          const res = await fetch(`${API_WORKFLOW}/workflow/stream`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            // Parse SSE events from buffer
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // keep incomplete line in buffer
+
+            let eventType = '';
+            let eventData = '';
+            for (const line of lines) {
+              if (line.startsWith('event: ')) {
+                eventType = line.slice(7).trim();
+              } else if (line.startsWith('data: ')) {
+                eventData = line.slice(6).trim();
+              } else if (line === '' && eventType) {
+                // End of event — process it
+                try {
+                  const data = JSON.parse(eventData);
+                  _handleSSE(eventType, data);
+                } catch { /* skip malformed */ }
+                eventType = '';
+                eventData = '';
               }
             }
-            setOutput(newOutput);
-            setCompleted(newDone);
-            setCurrentStep('STEP_7_ALGO');
-          } catch (e) { setError(e.message); }
-          finally { setLoading(false); }
-        })();
-      } else {
-        // Normal flow: run STEP_3
-        const nextStep = 'STEP_3_VARIABLE';
-        setCurrentStep(nextStep);
-        const merged = JSON.stringify({ ...(stateRef.current || {}), dataset_name: ds });
-        (async () => {
-          try {
-            const res = await fetch(`${API_WORKFLOW}/workflow/step`, {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ step: nextStep, query, state_json: merged }),
-            });
-            if (!res.ok) throw new Error('Failed');
-            const data = await res.json();
+          }
+        } catch (e) { setError(e.message); }
+        finally { setLoading(false); }
+      })();
+
+      // SSE event handler (closure over component state)
+      const _handleSSE = (type, data) => {
+        switch (type) {
+          case 'step_start': {
+            const stepMap = { 'STEP_3_VARIABLE': 'STEP_3_VARIABLE', 'STEP_4_OBJECTIVE': 'STEP_4_OBJECTIVE',
+              'STEP_5_CONSTRAINT': 'STEP_5_CONSTRAINT', 'STEP_6_CLASSIFY': 'STEP_6_CLASSIFY', 'STEP_7_ALGO': 'STEP_7_ALGO' };
+            const s = stepMap[data.step] || data.step;
+            setCurrentStep(s);
+            // Initialize streaming output buffer
+            setOutput((prev) => ({ ...prev, [s]: '' }));
+            break;
+          }
+          case 'step_chunk': {
+            // Append streaming token to current step output
+            setOutput((prev) => ({ ...prev, [data.step]: (prev[data.step] || '') + data.text }));
+            break;
+          }
+          case 'step_done': {
+            if (!data.skipped) {
+              setOutput((prev) => ({ ...prev, [data.step]: data.output }));
+            }
+            setCompleted((prev) => new Set([...prev, data.step]));
+            setState((prev) => ({ ...(prev || {}), step_results: { ...(prev?.step_results || {}), [data.step]: data.output } }));
+            break;
+          }
+          case 'done': {
             setState(data.state);
-            setOutput((prev) => ({ ...prev, [nextStep]: data.response }));
-            setCompleted((prev) => new Set([...prev, nextStep]));
-          } catch (e) { setError(e.message); }
-          finally { setLoading(false); }
-        })();
-      }
+            setCompleted((prev) => new Set([...prev, 'STEP_7_ALGO']));
+            setCurrentStep('STEP_7_ALGO');
+            break;
+          }
+          case 'error': {
+            setError(data.error);
+            break;
+          }
+        }
+      };
       return;
     }
 
@@ -334,7 +368,7 @@ function WorkflowPanel({ query, onDone, saveWorkflow }) {
       });
       if (!res.ok) throw new Error('Execute failed');
       const data = await res.json();
-      setExecResult(data.execution);
+      setExecResult({ ...data.execution, validation: data.validation });
       if (data.chart) setCharts([data.chart]);
 
       // Auto-save completed workflow
@@ -424,9 +458,17 @@ function WorkflowPanel({ query, onDone, saveWorkflow }) {
             <div className="metric"><span className="metric-value">{execResult.best_objective}</span><span className="metric-label">Best Objective</span></div>
             <div className="metric"><span className="metric-value">{execResult.runtime_seconds}s</span><span className="metric-label">Runtime</span></div>
             <div className="metric"><span className="metric-value">{execResult.iterations}</span><span className="metric-label">Iterations</span></div>
-            <div className="metric"><span className={`metric-value quality-${execResult.solution_quality}`}>{execResult.solution_quality}</span><span className="metric-label">Quality</span></div>
+            <div className="metric"><span className="metric-value">{execResult.status}</span><span className="metric-label">Status</span></div>
           </div>
-          <pre className="exec-output">{execResult.raw_output}</pre>
+          {execResult.validation && (
+            <div className="validation-badges">
+              {Object.entries(execResult.validation).filter(([k]) => k !== 'all_pass').map(([key, ok]) => (
+                <span key={key} className={`val-badge ${ok ? 'val-pass' : 'val-fail'}`}>
+                  {ok ? '✓' : '✗'} {key}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
