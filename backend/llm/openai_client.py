@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List, Optional
+from typing import AsyncGenerator, List, Optional
 
 try:
     from dotenv import load_dotenv
@@ -95,3 +95,27 @@ async def chat_completion(
         **kwargs,
     )
     return response.choices[0].message.content
+
+
+async def chat_completion_stream(
+    prompt: str,
+    model: str = CHAT_MODEL,
+    system: str = "You are a helpful algorithm recommendation assistant.",
+    **kwargs,
+) -> AsyncGenerator[str, None]:
+    """Stream chat completion chunks via SSE-compatible AsyncGenerator."""
+    logger.debug("Streaming chat completion with model=%s", model)
+    client = _get_client()
+    stream = await client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt},
+        ],
+        stream=True,
+        **kwargs,
+    )
+    async for chunk in stream:
+        delta = chunk.choices[0].delta
+        if delta.content:
+            yield delta.content

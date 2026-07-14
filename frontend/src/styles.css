@@ -754,6 +754,30 @@ header p {
   margin-top: 2px;
 }
 
+.validation-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.val-badge {
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.val-pass {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.val-fail {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
 .exec-output {
   font-size: 0.8rem;
   line-height: 1.6;
