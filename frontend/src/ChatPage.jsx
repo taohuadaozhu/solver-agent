@@ -47,6 +47,178 @@ function DocBadge({ doc, index }) {
   );
 }
 
+/* ── AgentPanel — LLM-driven multi-tool agent with SSE streaming ───────── */
+
+function AgentPanel({ query }) {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [finalAnswer, setFinalAnswer] = useState('');
+  const [charts, setCharts] = useState([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_WORKFLOW}/workflow/agent-stream`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          let eventType = '';
+          let eventData = '';
+          for (const line of lines) {
+            if (line.startsWith('event: ')) {
+              eventType = line.slice(7).trim();
+            } else if (line.startsWith('data: ')) {
+              eventData = line.slice(6).trim();
+            } else if (line === '' && eventType) {
+              try {
+                const data = JSON.parse(eventData);
+                if (cancelled) return;
+                switch (eventType) {
+                  case 'thinking':
+                    setEvents((prev) => [...prev, { type: 'thinking', round: data.round }]);
+                    break;
+                  case 'tool_calls':
+                    setEvents((prev) => [...prev, { type: 'tool_calls', calls: data.calls }]);
+                    break;
+                  case 'tool_result':
+                    setEvents((prev) => [...prev, { type: 'tool_result', ...data }]);
+                    break;
+                  case 'llm_response':
+                    setFinalAnswer(data.content);
+                    break;
+                  case 'done':
+                    if (data.charts?.length) setCharts(data.charts);
+                    setLoading(false);
+                    break;
+                  case 'error':
+                    setError(data.error);
+                    setLoading(false);
+                    break;
+                }
+              } catch { /* skip malformed SSE */ }
+              eventType = '';
+              eventData = '';
+            }
+          }
+        }
+      } catch (e) {
+        if (!cancelled) { setError(e.message); setLoading(false); }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [query]);
+
+  const toolLabel = (name) => {
+    switch (name) {
+      case 'load_dataset': return 'Load Dataset';
+      case 'execute_solver': return 'Execute Solver';
+      case 'generate_chart': return 'Generate Chart';
+      default: return name;
+    }
+  };
+
+  const toolIcon = (name) => {
+    switch (name) {
+      case 'load_dataset': return '📂';
+      case 'execute_solver': return '⚙️';
+      case 'generate_chart': return '📊';
+      default: return '🔧';
+    }
+  };
+
+  return (
+    <div className="agent-panel">
+      {error && <div className="answer-error">{error}</div>}
+
+      <div className="agent-timeline">
+        {events.map((ev, i) => {
+          if (ev.type === 'thinking') {
+            return (
+              <div key={i} className="agent-event thinking-event">
+                <span className="agent-event-icon">💭</span>
+                <span className="agent-event-text">Round {ev.round} — thinking...</span>
+              </div>
+            );
+          }
+          if (ev.type === 'tool_calls') {
+            return (
+              <div key={i} className="agent-event tool-calls-event">
+                {ev.calls.map((tc, j) => (
+                  <details key={tc.id || j} className="tool-call-card">
+                    <summary className="tool-call-summary">
+                      <span>{toolIcon(tc.name)}</span>
+                      <span className="tool-call-name">{toolLabel(tc.name)}</span>
+                      {tc.arguments?.algorithm && (
+                        <span className="tool-call-algo">{tc.arguments.algorithm}</span>
+                      )}
+                      {tc.arguments?.dataset_name && (
+                        <span className="tool-call-ds">{tc.arguments.dataset_name}</span>
+                      )}
+                    </summary>
+                    <pre className="tool-call-args">{JSON.stringify(tc.arguments, null, 2)}</pre>
+                  </details>
+                ))}
+              </div>
+            );
+          }
+          if (ev.type === 'tool_result') {
+            const res = ev.result || {};
+            const ok = res.success !== false;
+            return (
+              <div key={i} className="agent-event tool-result-event">
+                <details className={`tool-result-card ${ok ? 'result-ok' : 'result-err'}`}>
+                  <summary className="tool-result-summary">
+                    <span>{ok ? '✅' : '❌'}</span>
+                    <span className="tool-result-label">{toolLabel(ev.name)} complete</span>
+                    {res.result?.best_objective != null && (
+                      <span className="tool-result-metric">Obj: {res.result.best_objective}</span>
+                    )}
+                    {res.result?.runtime_seconds != null && (
+                      <span className="tool-result-metric">{res.result.runtime_seconds}s</span>
+                    )}
+                  </summary>
+                  <pre className="tool-result-data">{JSON.stringify(res, null, 2)}</pre>
+                </details>
+              </div>
+            );
+          }
+          return null;
+        })}
+      </div>
+
+      {loading && !error && (
+        <div className="loading-dots"><span /><span /><span /></div>
+      )}
+
+      {finalAnswer && (
+        <div className="agent-final-answer">
+          <div className="answer-text">{finalAnswer}</div>
+        </div>
+      )}
+
+      {charts.map((c, i) => <ChartView key={i} chart={c} />)}
+    </div>
+  );
+}
+
+
 function ChartView({ chart }) {
   if (!chart || !chart.data) return null;
   const id = `chart-${Math.random().toString(36).slice(2)}`;
@@ -510,6 +682,7 @@ function Message({ msg }) {
       <div className="message-content">
         {msg.role === 'user' && <div className="user-text">{msg.content}</div>}
         {msg.workflowQuery && <WorkflowPanel query={msg.workflowQuery} saveWorkflow={msg.saveWorkflow} />}
+        {msg.agentQuery && <AgentPanel query={msg.agentQuery} />}
         {msg.answer && <div className="answer-text">{msg.answer}</div>}
         {msg.error && <div className="answer-error">{msg.error}</div>}
       </div>
@@ -636,10 +809,18 @@ export default function ChatPage() {
     setInput('');
   };
 
+  const handleSendAgent = (query) => {
+    saveMsg('user', query);
+    setMessages((prev) => [...prev, { role: 'user', content: query }, { role: 'assistant', agentQuery: query }]);
+    setInput('');
+  };
+
   const handleSend = () => {
     const query = input.trim();
     if (!query || loading) return;
-    mode === 'workflow' ? handleSendWorkflow(query) : handleSendQuick(query);
+    if (mode === 'agent') handleSendAgent(query);
+    else if (mode === 'workflow') handleSendWorkflow(query);
+    else handleSendQuick(query);
   };
 
   const handleKeyDown = (e) => {
@@ -651,6 +832,7 @@ export default function ChatPage() {
       <div className="chat-controls">
         <div className="mode-switch">
           <button className={mode === 'workflow' ? 'mode-active' : ''} onClick={() => setMode('workflow')}>Guided Workflow</button>
+          <button className={mode === 'agent' ? 'mode-active' : ''} onClick={() => setMode('agent')}>Agent Mode</button>
           <button className={mode === 'quick' ? 'mode-active' : ''} onClick={() => setMode('quick')}>Quick Recommend</button>
         </div>
       </div>
@@ -661,6 +843,8 @@ export default function ChatPage() {
             <h2>Solver Agent</h2>
             <p>{mode === 'workflow'
               ? 'Describe your optimization problem. The agent will guide you step by step: problem → dataset → variables → objectives → constraints → classify → algorithm → execute.'
+              : mode === 'agent'
+              ? 'Describe your optimization problem. The LLM agent will autonomously load datasets, execute solvers, generate charts, and compare results.'
               : 'Quick RAG-based algorithm recommendation.'}</p>
             <div className="example-queries">
               <span>Try:</span>

@@ -29,7 +29,7 @@ from backend.agent.workflow import (
 from backend.agent.tools import TOOLS, call_tool
 from backend.agent.visualizer import generate_chart
 from backend.agent.executor import execute_solver, load_dataset
-from backend.llm.openai_client import chat_completion
+from backend.llm.openai_client import chat_completion, chat_completion_with_tools
 from backend.memory.store import (
     create_conversation,
     list_conversations,
@@ -336,6 +336,108 @@ async def stream_continue(req: ContinueRequest):
 def _sse_str(event: str, data: dict) -> str:
     """Format a dict as an SSE message string."""
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+# ── Agent Loop (LLM-driven multi-tool calling) ──────────────────────────────
+
+AGENT_SYSTEM_PROMPT = (
+    "You are an optimization expert agent with tool access. Follow this process:\n"
+    "1. Understand the user's optimization problem.\n"
+    "2. Use load_dataset to find the right benchmark dataset.\n"
+    "3. Execute one or more algorithms on the dataset using execute_solver. "
+    "When comparing algorithms, run them on the same dataset so results are comparable.\n"
+    "4. Use generate_chart to create visualizations (convergence curves, bar charts, etc.).\n"
+    "5. Compare results and give a final data-driven recommendation.\n\n"
+    "Always explain what you're doing before calling tools. "
+    "When the user asks to compare algorithms, execute ALL of them before giving the final answer. "
+    "Respond in Chinese if the user wrote in Chinese."
+)
+
+
+@app.post("/workflow/agent-stream")
+async def agent_stream(req: WorkflowRequest):
+    """SSE streaming agent loop: LLM decides tools → execute in parallel → repeat → final answer."""
+
+    async def event_generator():
+        messages = [
+            {"role": "system", "content": AGENT_SYSTEM_PROMPT},
+            {"role": "user", "content": req.query},
+        ]
+
+        charts = []
+        max_rounds = 8
+
+        for round_num in range(max_rounds):
+            yield _sse_str("thinking", {"round": round_num + 1})
+
+            try:
+                msg = await chat_completion_with_tools(messages, TOOLS)
+            except Exception as e:
+                logger.exception("Agent LLM call failed at round %d", round_num + 1)
+                yield _sse_str("error", {"error": f"LLM error: {e}"})
+                return
+
+            # No tool calls → final answer
+            if not msg.tool_calls:
+                yield _sse_str("llm_response", {"content": msg.content or ""})
+                yield _sse_str("done", {"charts": charts})
+                return
+
+            # Broadcast what tools the LLM wants to call
+            calls_info = []
+            for tc in msg.tool_calls:
+                try:
+                    args = json.loads(tc.function.arguments)
+                except (json.JSONDecodeError, TypeError):
+                    args = {}
+                calls_info.append({
+                    "id": tc.id,
+                    "name": tc.function.name,
+                    "arguments": args,
+                })
+            yield _sse_str("tool_calls", {"calls": calls_info})
+
+            # Append assistant message (may have content + tool_calls)
+            messages.append(msg.model_dump())
+
+            # Execute all tool calls in parallel
+            async def run_one(tc):
+                try:
+                    args = json.loads(tc.function.arguments)
+                except (json.JSONDecodeError, TypeError):
+                    args = {}
+                loop = asyncio.get_event_loop()
+                result = await loop.run_in_executor(None, call_tool, tc.function.name, args)
+                return tc.id, tc.function.name, result
+
+            results = await asyncio.gather(*[run_one(tc) for tc in msg.tool_calls])
+
+            for tool_id, tool_name, result in results:
+                yield _sse_str("tool_result", {
+                    "tool_call_id": tool_id,
+                    "name": tool_name,
+                    "result": result,
+                })
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_id,
+                    "content": json.dumps(result, ensure_ascii=False),
+                })
+
+                if tool_name == "generate_chart" and result.get("success"):
+                    charts.append(result["result"])
+
+        yield _sse_str("error", {"error": "Reached maximum agent rounds without final answer"})
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
 
 
 # ── Memory / Conversation ─────────────────────────────────────────────────

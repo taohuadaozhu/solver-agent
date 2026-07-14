@@ -11,6 +11,14 @@ from backend.agent.solver import (
     ALNSSolver,
     ACOPermutationSolver,
     SAPermutationSolver,
+    DESolver,
+    CSASolver,
+    HSSolver,
+    VNSSolver,
+    WOASolver,
+    BASolver,
+    ABCASolver,
+    EGOSolver,
     DummySolver,
 )
 
@@ -21,21 +29,41 @@ logger = logging.getLogger(__name__)
 # Add new solvers here.
 
 TOOLS: Dict[str, Type[Solver]] = {
+    # ── Core algorithms ──
     "GA": GASolver,
     "GA-Permutation": GASolver,
+    "Genetic Algorithm": GASolver,
     "NSGA-II": NSGA2Solver,
     "NSGA2": NSGA2Solver,
     "PSO": PSOSolver,
     "PSO-Permutation": PSOSolver,
+    "Particle Swarm Optimization": PSOSolver,
+    "DE": DESolver,
+    "Differential Evolution": DESolver,
+    "CSA": CSASolver,
+    "Cuckoo Search": CSASolver,
+    "HS": HSSolver,
+    "Harmony Search": HSSolver,
+    "VNS": VNSSolver,
+    "Variable Neighborhood Search": VNSSolver,
+    "WOA": WOASolver,
+    "Whale Optimization": WOASolver,
+    "BA": BASolver,
+    "Bat Algorithm": BASolver,
+    "ABCA": ABCASolver,
+    "Artificial Bee Colony": ABCASolver,
+    "EGO": EGOSolver,
+    "Efficient Global Optimization": EGOSolver,
+    # ── Permutation / combinatorial ──
     "ALNS": ALNSSolver,
     "ACO": ACOPermutationSolver,
     "ACO-Permutation": ACOPermutationSolver,
+    "Ant Colony Optimization": ACOPermutationSolver,
     "SA": SAPermutationSolver,
     "SA-Permutation": SAPermutationSolver,
     "Simulated Annealing": SAPermutationSolver,
-    "Particle Swarm Optimization": PSOSolver,
-    "Genetic Algorithm": GASolver,
-    "Ant Colony Optimization": ACOPermutationSolver,
+    "ILS": ALNSSolver,
+    "Iterated Local Search": ALNSSolver,
 }
 
 
@@ -58,6 +86,6 @@ def resolve(algorithm_name: str) -> Solver:
             logger.info("Fuzzy match: '%s' -> '%s'", algorithm_name, key)
             return cls()
 
-    # Fallback to DummySolver
+    # Fallback to DummySolver (which runs GA under the hood now)
     logger.warning("No solver registered for '%s', using DummySolver", algorithm_name)
     return DummySolver(name=algorithm_name)
