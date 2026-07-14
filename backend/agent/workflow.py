@@ -183,20 +183,48 @@ async def run_workflow(user_query: str) -> WorkflowState:
     return state
 
 
+def _parse_coverage(analysis: str) -> dict:
+    """Extract the coverage JSON block from a STEP_1 LLM response."""
+    import re
+    match = re.search(r'```coverage\s*\n(\{.*?\})\s*\n```', analysis, re.DOTALL)
+    if not match:
+        return {"variables": False, "objectives": False, "constraints": False}
+    try:
+        return json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return {"variables": False, "objectives": False, "constraints": False}
+
+
 async def start_workflow(user_query: str) -> dict:
-    """Run STEP_1 only, then search datasets via RAG. Returns analysis + dataset options for user selection."""
+    """Run STEP_1 only, then search datasets via RAG. Returns analysis + dataset options + skip info."""
     state = WorkflowState(problem=user_query)
 
     # STEP_1: Problem understanding
     analysis = await run_step("STEP_1_PROBLEM", state, user_query)
+    coverage = _parse_coverage(analysis)
+
+    # Clean the coverage block from the displayed analysis
+    import re
+    clean_analysis = re.sub(r'```coverage\s*\n\{.*?\}\s*\n```\n?', '', analysis, flags=re.DOTALL).strip()
 
     # RAG search for dataset options
     dataset_docs = await rag_search(f"dataset for {user_query}", top_k=10, doc_type="datasets")
 
+    # Determine which steps are pre-covered
+    skip_steps = []
+    if coverage.get("variables"):
+        skip_steps.append("STEP_3_VARIABLE")
+    if coverage.get("objectives"):
+        skip_steps.append("STEP_4_OBJECTIVE")
+    if coverage.get("constraints"):
+        skip_steps.append("STEP_5_CONSTRAINT")
+
     return {
-        "analysis": analysis,
+        "analysis": clean_analysis,
         "datasets": dataset_docs,
         "state": state.to_dict(),
+        "coverage": coverage,
+        "skip_steps": skip_steps,
     }
 
 

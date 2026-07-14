@@ -80,6 +80,7 @@ class ContinueRequest(BaseModel):
     query: str = Field(..., min_length=1)
     selected_dataset: str = Field(..., min_length=1)
     state_json: str = Field(..., description="Serialized WorkflowState from /workflow/start")
+    skip_steps: list = Field(default_factory=list, description="Steps to auto-fill from user input")
 
 
 class SaveMessageRequest(BaseModel):
@@ -213,6 +214,8 @@ async def start_analysis(req: WorkflowRequest):
         "analysis": result["analysis"],
         "datasets": result["datasets"],
         "state": result["state"],
+        "coverage": result.get("coverage", {}),
+        "skip_steps": result.get("skip_steps", []),
         "elapsed_ms": round(elapsed, 1),
     }
 
@@ -233,6 +236,57 @@ async def continue_analysis(req: ContinueRequest):
     except Exception:
         logger.exception("Continue workflow failed")
         raise HTTPException(status_code=502, detail="Workflow continuation failed")
+
+    elapsed = (time.perf_counter() - start) * 1000
+
+    return {
+        "state": state.to_dict(),
+        "elapsed_ms": round(elapsed, 1),
+    }
+
+
+@app.post("/workflow/auto-continue")
+async def auto_continue_analysis(req: ContinueRequest):
+    """Continue workflow from dataset selection, auto-filling pre-covered steps."""
+    start = time.perf_counter()
+    logger.info("Auto-continue: dataset=%s, skip=%s", req.selected_dataset, req.skip_steps)
+
+    try:
+        state_data = json.loads(req.state_json)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid state_json")
+
+    state = WorkflowState(problem=req.query, dataset_name=req.selected_dataset,
+                          step_results=state_data.get("step_results", {}))
+
+    # Run STEP_2 first (record dataset choice)
+    state.step_results["STEP_2_DATASET"] = f"User selected dataset: {req.selected_dataset}"
+    state.dataset_name = req.selected_dataset
+
+    # Auto-fill skipped steps from the original query
+    skip_map = {
+        "STEP_3_VARIABLE": ("STEP_3_VARIABLE",
+            f"Variables extracted from user input: the problem description already specified the decision variables."),
+        "STEP_4_OBJECTIVE": ("STEP_4_OBJECTIVE",
+            f"Objectives extracted from user input: the user already described what to optimize."),
+        "STEP_5_CONSTRAINT": ("STEP_5_CONSTRAINT",
+            f"Constraints extracted from user input: constraints were already provided in the problem description."),
+    }
+    for step_key in req.skip_steps:
+        if step_key in skip_map:
+            s, msg = skip_map[step_key]
+            state.step_results[s] = msg
+
+    # Run remaining non-skipped steps
+    all_steps = ["STEP_3_VARIABLE", "STEP_4_OBJECTIVE", "STEP_5_CONSTRAINT", "STEP_6_CLASSIFY", "STEP_7_ALGO"]
+    for step in all_steps:
+        if step in req.skip_steps:
+            continue
+        try:
+            await run_step(step, state, req.query)
+        except Exception as e:
+            logger.exception("Step %s failed", step)
+            state.step_results[step] = f"Error: {e}"
 
     elapsed = (time.perf_counter() - start) * 1000
 
