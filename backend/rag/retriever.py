@@ -2,7 +2,7 @@ import logging
 from typing import List, Optional
 
 from backend.llm.openai_client import embeddings
-from backend.database.postgres import fetch_all
+from backend.database.postgres import fetch_all, execute
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +13,7 @@ async def semantic_search(
     """Embed query and retrieve top-k documents by cosine similarity via pgvector."""
     logger.info("Semantic search: query=%.80s... top_k=%d type=%s", query, top_k, doc_type or "all")
 
+    execute('SET ivfflat.probes = 5;')
     query_embedding = (await embeddings([query]))[0]
     vector_str = "[" + ",".join(str(v) for v in query_embedding) + "]"
 

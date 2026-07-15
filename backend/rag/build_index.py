@@ -81,6 +81,38 @@ CREATE TABLE IF NOT EXISTS rag_documents (
 ''')
 
 
+def ensure_vector_index(lists: int = 100):
+    """Create IVFFlat index on the embedding column for fast approximate nearest neighbor search.
+
+    IVFFlat partitions vectors into ``lists`` clusters via k-means. At query time only the
+    closest ``probes`` clusters are scanned, trading a tiny amount of recall for orders-of-magnitude
+    speed improvement over exact search.
+
+    Must be called AFTER the table has data, or the centroids will be empty.
+    """
+    row_count = fetch_one('SELECT COUNT(*) AS cnt FROM rag_documents')
+    if not row_count or row_count['cnt'] == 0:
+        return
+
+    # Check if index already exists
+    existing = fetch_one(
+        "SELECT 1 FROM pg_indexes WHERE indexname = 'idx_rag_embedding_ivfflat'"
+    )
+    if existing:
+        return
+
+    # lists ≈ sqrt(n) is a common starting point; cap at a reasonable floor
+    auto_lists = max(lists, int((row_count['cnt'] ** 0.5)))
+    execute(f'''
+CREATE INDEX idx_rag_embedding_ivfflat
+    ON rag_documents
+    USING ivfflat (embedding vector_cosine_ops)
+    WITH (lists = {auto_lists});
+''')
+    # Tell pgvector how many clusters to probe at query time. Default is 1 (too low).
+    execute('SET ivfflat.probes = 5;')
+
+
 def get_existing_document(path: str) -> Optional[Dict]:
     return fetch_one('SELECT document_hash FROM rag_documents WHERE path = %s', (path,))
 
@@ -146,6 +178,8 @@ async def index_knowledge_base(source_dir: str, doc_types: List[str]):
             document_hash=document_hash,
         )
         print(f'Indexed {path} ({doc_type})')
+
+    ensure_vector_index()
 
 
 if __name__ == '__main__':
