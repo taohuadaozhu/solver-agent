@@ -3,21 +3,22 @@
   "chineseName": "",
   "description": "POA 是某种群体智能算法，用于连续变量搜索与迭代改进。",
   "problemType": [
+    "VRP",
+    "TSP",
+    "Scheduling",
     "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Continuous"
   ],
   "algorithmFamily": [
     "Swarm"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Energy",
-    "Manufacturing"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

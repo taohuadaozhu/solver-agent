@@ -3,20 +3,26 @@
   "chineseName": "",
   "description": "排列编码遗传算法，使用交换序交叉和交换变异。",
   "problemType": [
-    "Permutation Optimization"
+    "VRP",
+    "TSP",
+    "JSP",
+    "FSP",
+    "Scheduling",
+    "Knapsack",
+    "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
-    "Discrete"
+    "permutation",
+    "discrete"
   ],
   "algorithmFamily": [
     "Evolutionary"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Logistics"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

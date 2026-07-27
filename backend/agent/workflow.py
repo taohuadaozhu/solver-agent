@@ -1,9 +1,11 @@
 """State machine orchestrator — drives the 7-step optimization workflow."""
 
+import asyncio
 import json
 import logging
+import re
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from backend.llm.openai_client import chat_completion, chat_completion_stream
 from backend.llm.prompt import (
@@ -16,9 +18,38 @@ from backend.llm.prompt import (
     step6_handler,
     step7_handler,
 )
-from backend.rag.retriever import semantic_search
+from backend.rag.retriever import semantic_search, hybrid_search_with_rerank
 
 logger = logging.getLogger(__name__)
+
+# Known capability keywords to scan algorithm summaries for
+_CAPABILITY_PATTERNS = {
+    "objectives": {
+        "makespan": ["makespan", "completion time", "完工时间", "completion"],
+        "tardiness": ["tardiness", "lateness", "delay", "延迟", "拖期"],
+        "cost": ["cost", "成本", "expense", "economic"],
+        "throughput": ["throughput", "through-put", "吞吐", "productivity"],
+        "distance": ["distance", "路程", "travel", "route length"],
+        "energy": ["energy", "能耗", "power", "fuel"],
+        "utilization": ["utilization", "利用率", "load balance", "负载"],
+        "multi_objective": ["multi-objective", "multi objective", "多目标", "pareto", "nsga"],
+    },
+    "constraints": {
+        "time_windows": ["time window", "时间窗", "time-window", "tw"],
+        "precedence": ["precedence", "sequence", "顺序", "先后", "dependency"],
+        "capacity": ["capacity", "容量", "load", "weight", "载重"],
+        "machine_eligibility": ["machine eligibility", "eligible", "机器约束", "dedicated"],
+        "setup_time": ["setup", "换模", "changeover", "preparation"],
+        "breakdowns": ["breakdown", "failure", "故障", "stochastic", "uncertain"],
+        "no_wait": ["no-wait", "no wait", "零等待", "blocking"],
+        "recirculation": ["recirculation", "reentrant", "重入"],
+    },
+    "features": {
+        "large_scale": ["large scale", "大规模", "large-scale", "benchmark"],
+        "real_time": ["real-time", "实时", "online", "dynamic"],
+        "robustness": ["robust", "鲁棒", "uncertainty", "stochastic"],
+    },
+}
 
 WORKFLOW_STEPS = [
     "STEP_1_PROBLEM",
@@ -77,19 +108,31 @@ class WorkflowState:
         }
 
 
-async def rag_search(query: str, top_k: int = 3, doc_type: Optional[str] = None) -> List[Dict]:
-    """Run semantic search and return simplified results."""
+async def rag_search(query: str, top_k: int = 3, doc_type: Optional[str] = None, use_hybrid: bool = True) -> List[Dict]:
+    """Run semantic or hybrid search and return simplified results."""
     try:
-        results = await semantic_search(query, top_k=top_k, doc_type=doc_type)
-        return [
-            {
-                "name": r["name"],
-                "type": r["type"],
-                "summary": r["summary"],
-                "similarity": round(r["similarity"], 4),
-            }
-            for r in results
-        ]
+        if use_hybrid:
+            results = await hybrid_search_with_rerank(query, top_k=top_k, doc_type=doc_type)
+            return [
+                {
+                    "name": r["name"],
+                    "type": r["type"],
+                    "summary": r["summary"],
+                    "similarity": r.get("rerank_score") or r.get("similarity", 0),
+                }
+                for r in results
+            ]
+        else:
+            results = await semantic_search(query, top_k=top_k, doc_type=doc_type)
+            return [
+                {
+                    "name": r["name"],
+                    "type": r["type"],
+                    "summary": r["summary"],
+                    "similarity": round(r["similarity"], 4),
+                }
+                for r in results
+            ]
     except Exception:
         logger.exception("RAG search failed for query=%s", query)
         return []
@@ -185,7 +228,6 @@ async def run_workflow(user_query: str) -> WorkflowState:
 
 def _parse_coverage(analysis: str) -> dict:
     """Extract the coverage JSON block from a STEP_1 LLM response."""
-    import re
     match = re.search(r'```coverage\s*\n(\{.*?\})\s*\n```', analysis, re.DOTALL)
     if not match:
         return {"variables": False, "objectives": False, "constraints": False}
@@ -195,8 +237,104 @@ def _parse_coverage(analysis: str) -> dict:
         return {"variables": False, "objectives": False, "constraints": False}
 
 
+async def _extract_domain_keywords(analysis: str, user_query: str) -> str:
+    """Use LLM to extract a focused search query from the problem analysis.
+
+    Returns a short English keyword string optimized for embedding search,
+    e.g. "job shop scheduling with setup times and machine eligibility".
+    """
+    try:
+        response = await chat_completion(
+            prompt=(
+                f"User problem: {user_query}\n\n"
+                f"Analysis: {analysis[:1500]}\n\n"
+                "Extract 3-8 key technical terms or phrases (in English) that best describe "
+                "this optimization problem for searching a knowledge base of datasets and algorithms. "
+                "Output only the keywords separated by spaces, no other text."
+            ),
+            system="You are a technical keyword extractor. Be concise and precise.",
+            temperature=0.0,
+            max_tokens=80,
+        )
+        keywords = response.strip()
+        logger.info("Extracted domain keywords: %s", keywords)
+        return keywords if keywords else user_query
+    except Exception:
+        logger.warning("Keyword extraction failed, falling back to raw query")
+        return user_query
+
+
+def _analyze_algorithm_capabilities(algorithm_docs: List[Dict]) -> dict:
+    """Scan algorithm summaries for capability keywords.
+
+    Returns a structured dict of supported objectives, constraints, and features
+    with which algorithms support each.
+    """
+    capabilities: Dict[str, Dict[str, List[str]]] = {
+        "objectives": {},
+        "constraints": {},
+        "features": {},
+    }
+
+    for alg in algorithm_docs:
+        name = alg.get("name", "")
+        summary = (alg.get("summary", "") + " " + name).lower()
+
+        for category in ["objectives", "constraints", "features"]:
+            for cap_key, patterns in _CAPABILITY_PATTERNS[category].items():
+                if any(p in summary for p in patterns):
+                    if cap_key not in capabilities[category]:
+                        capabilities[category][cap_key] = []
+                    capabilities[category][cap_key].append(name)
+
+    # Deduplicate algorithm lists
+    for category in capabilities:
+        for key in capabilities[category]:
+            capabilities[category][key] = list(dict.fromkeys(capabilities[category][key]))
+
+    return capabilities
+
+
+def _format_capabilities_hint(capabilities: dict) -> str:
+    """Render capabilities as a human-readable hint string for the frontend."""
+    parts = []
+
+    obj_caps = capabilities.get("objectives", {})
+    if obj_caps:
+        lines = ["**Supported optimization objectives (from available algorithms):**"]
+        for cap, algos in sorted(obj_caps.items(), key=lambda x: -len(x[1])):
+            label = cap.replace("_", " ").title()
+            algo_list = ", ".join(algos[:3])
+            lines.append(f"  • {label} — {algo_list}")
+        parts.append("\n".join(lines))
+
+    cst_caps = capabilities.get("constraints", {})
+    if cst_caps:
+        lines = ["**Supported constraint types:**"]
+        for cap, algos in sorted(cst_caps.items(), key=lambda x: -len(x[1])):
+            label = cap.replace("_", " ").title()
+            algo_list = ", ".join(algos[:3])
+            lines.append(f"  • {label} — {algo_list}")
+        parts.append("\n".join(lines))
+
+    feat_caps = capabilities.get("features", {})
+    if feat_caps:
+        lines = ["**Algorithm features:**"]
+        for cap, algos in sorted(feat_caps.items(), key=lambda x: -len(x[1])):
+            label = cap.replace("_", " ").title()
+            algo_list = ", ".join(algos[:3])
+            lines.append(f"  • {label} — {algo_list}")
+        parts.append("\n".join(lines))
+
+    return "\n\n".join(parts) if parts else ""
+
+
 async def start_workflow(user_query: str) -> dict:
-    """Run STEP_1 only, then search datasets via RAG. Returns analysis + dataset options + skip info."""
+    """Run STEP_1, then analysis-driven parallel RAG for datasets + algorithms.
+
+    Returns analysis, dataset options, algorithm options, capability hints, and skip info
+    so the frontend can guide the user with knowledge of what the system actually supports.
+    """
     state = WorkflowState(problem=user_query)
 
     # STEP_1: Problem understanding
@@ -204,11 +342,23 @@ async def start_workflow(user_query: str) -> dict:
     coverage = _parse_coverage(analysis)
 
     # Clean the coverage block from the displayed analysis
-    import re
     clean_analysis = re.sub(r'```coverage\s*\n\{.*?\}\s*\n```\n?', '', analysis, flags=re.DOTALL).strip()
 
-    # RAG search for dataset options
-    dataset_docs = await rag_search(f"dataset for {user_query}", top_k=10, doc_type="datasets")
+    # Extract focused domain keywords from the LLM analysis
+    domain_keywords = await _extract_domain_keywords(analysis, user_query)
+
+    # Parallel RAG: datasets + algorithms, both driven by the analysis
+    dataset_docs, algorithm_docs = await asyncio.gather(
+        rag_search(f"dataset for {domain_keywords}", top_k=10, doc_type="datasets"),
+        rag_search(f"algorithm for {domain_keywords}", top_k=10, doc_type="algorithms"),
+    )
+
+    # Filter out example/tutorial entries from algorithms
+    algorithm_docs = [d for d in algorithm_docs if "example" not in d.get("name", "").lower()]
+
+    # Analyze what the candidate algorithms can actually do
+    capabilities = _analyze_algorithm_capabilities(algorithm_docs)
+    capabilities_hint = _format_capabilities_hint(capabilities)
 
     # Determine which steps are pre-covered
     skip_steps = []
@@ -222,6 +372,9 @@ async def start_workflow(user_query: str) -> dict:
     return {
         "analysis": clean_analysis,
         "datasets": dataset_docs,
+        "algorithms": algorithm_docs,
+        "capabilities": capabilities,
+        "capabilities_hint": capabilities_hint,
         "state": state.to_dict(),
         "coverage": coverage,
         "skip_steps": skip_steps,

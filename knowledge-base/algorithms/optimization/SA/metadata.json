@@ -3,21 +3,25 @@
   "chineseName": "",
   "description": "SA 是模拟退火算法，通过温度降低机制接受坏解以跳出局部最优。",
   "problemType": [
+    "VRP",
+    "TSP",
+    "JSP",
+    "FSP",
+    "Scheduling",
+    "Knapsack",
     "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Continuous"
   ],
   "algorithmFamily": [
     "Evolutionary"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Energy",
-    "Manufacturing"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

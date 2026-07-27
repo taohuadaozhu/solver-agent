@@ -3,21 +3,22 @@
   "chineseName": "蝴蝶群算法",
   "description": "COA 是蝴蝶群算法类群体搜索方法，用于连续优化问题。",
   "problemType": [
+    "VRP",
+    "TSP",
+    "Scheduling",
     "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Continuous"
   ],
   "algorithmFamily": [
     "Swarm"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Energy",
-    "Manufacturing"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

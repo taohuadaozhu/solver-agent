@@ -3,20 +3,25 @@
   "chineseName": "",
   "description": "边组装交叉 + 3-opt 片段重组，提高旅行商类问题解的多样性。",
   "problemType": [
-    "Permutation Optimization"
+    "VRP",
+    "TSP",
+    "JSP",
+    "FSP",
+    "Scheduling",
+    "Knapsack",
+    "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Discrete"
   ],
   "algorithmFamily": [
     "Evolutionary"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Logistics"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

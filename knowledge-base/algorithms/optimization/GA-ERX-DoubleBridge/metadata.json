@@ -3,20 +3,25 @@
   "chineseName": "",
   "description": "边重组交叉 + double-bridge 扰动，增强局部跳跃能力。",
   "problemType": [
-    "Permutation Optimization"
+    "VRP",
+    "TSP",
+    "JSP",
+    "FSP",
+    "Scheduling",
+    "Knapsack",
+    "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Discrete"
   ],
   "algorithmFamily": [
     "Evolutionary"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Logistics"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

@@ -3,20 +3,24 @@
   "chineseName": "",
   "description": "迭代局部搜索，反复扰动与局部优化用于单目标排列问题。",
   "problemType": [
-    "Permutation Optimization"
+    "VRP",
+    "TSP",
+    "JSP",
+    "FSP",
+    "Scheduling"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
-    "Discrete"
+    "permutation",
+    "discrete"
   ],
   "algorithmFamily": [
     "Local Search"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Logistics"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

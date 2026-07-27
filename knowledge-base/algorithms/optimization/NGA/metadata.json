@@ -3,20 +3,25 @@
   "chineseName": "",
   "description": "利用 niche 惩罚机制保持多样性的排列型遗传算法。",
   "problemType": [
-    "Permutation Optimization"
+    "VRP",
+    "TSP",
+    "JSP",
+    "FSP",
+    "Scheduling",
+    "Knapsack",
+    "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Discrete"
   ],
   "algorithmFamily": [
     "Evolutionary"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Logistics"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

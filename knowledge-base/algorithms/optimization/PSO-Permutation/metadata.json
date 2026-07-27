@@ -3,20 +3,23 @@
   "chineseName": "",
   "description": "交换序形式的粒子群优化，用于离散排列问题的单目标搜索。",
   "problemType": [
-    "Permutation Optimization"
+    "VRP",
+    "TSP",
+    "Scheduling",
+    "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
-    "Discrete"
+    "permutation",
+    "discrete"
   ],
   "algorithmFamily": [
     "Swarm"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Logistics"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

@@ -3,20 +3,23 @@
   "chineseName": "",
   "description": "基于排列的 CMPSO，增加 Cauchy 变异以增强探索。",
   "problemType": [
-    "Permutation Optimization"
+    "VRP",
+    "TSP",
+    "Scheduling",
+    "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
-    "Discrete"
+    "permutation",
+    "discrete"
   ],
   "algorithmFamily": [
     "Swarm"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Logistics"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

@@ -1,10 +1,11 @@
-"""Step-by-step workflow API — drives the 7-step state machine with tool calling."""
+"""Step-by-step workflow API — LangGraph-powered orchestration."""
 
 import asyncio
 import json
 import logging
 import sys
 import time
+import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -16,20 +17,13 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+from langgraph.errors import GraphInterrupt
+from langgraph.types import Command
 
-from backend.agent.workflow import (
-    run_step,
-    run_workflow,
-    start_workflow,
-    continue_workflow,
-    stream_workflow_continue,
-    WorkflowState,
-    WORKFLOW_STEPS,
-)
-from backend.agent.tools import TOOLS, call_tool
-from backend.agent.visualizer import generate_chart
+from backend.graph import workflow_graph, build_agent
 from backend.agent.executor import execute_solver, load_dataset
-from backend.llm.openai_client import chat_completion, chat_completion_with_tools
+from backend.agent.tools import call_tool
+from backend.agent.visualizer import generate_chart
 from backend.memory.store import (
     create_conversation,
     list_conversations,
@@ -63,6 +57,7 @@ app.add_middleware(
 
 class WorkflowRequest(BaseModel):
     query: str = Field(..., min_length=1, description="User's optimization problem description")
+    conversation_id: Optional[str] = Field(default=None, description="Conversation ID for multi-turn context")
 
 
 class StepRequest(BaseModel):
@@ -201,125 +196,103 @@ async def handle_tool_call(req: dict):
     return result
 
 
+# ── Workflow: LangGraph-based 7-step state machine ─────────────────────────
+
+_WORKFLOW_NODE_STEPS = {
+    "step3_variables": "STEP_3_VARIABLE",
+    "step4_objectives": "STEP_4_OBJECTIVE",
+    "step5_constraints": "STEP_5_CONSTRAINT",
+    "step6_classify": "STEP_6_CLASSIFY",
+    "step7_algo": "STEP_7_ALGO",
+}
+
+
 @app.post("/workflow/start")
 async def start_analysis(req: WorkflowRequest):
-    """Run STEP_1 problem understanding + return dataset options for user selection."""
+    """Run STEP_1 + parallel RAG, then pause for dataset selection via interrupt()."""
     start = time.perf_counter()
-    logger.info("Starting analysis for: %.80s...", req.query)
+    logger.info("Starting graph-based analysis for: %.80s...", req.query)
+    thread_id = uuid.uuid4().hex[:12]
+    config = {"configurable": {"thread_id": thread_id}}
 
     try:
-        result = await start_workflow(req.query)
+        await workflow_graph.ainvoke({"problem": req.query}, config)
+    except GraphInterrupt:
+        pass  # Expected — graph paused at step2_dataset interrupt
     except Exception:
-        logger.exception("Start workflow failed")
+        logger.exception("Workflow graph start failed")
         raise HTTPException(status_code=502, detail="Analysis failed")
 
-    elapsed = (time.perf_counter() - start) * 1000
-
-    return {
-        "analysis": result["analysis"],
-        "datasets": result["datasets"],
-        "state": result["state"],
-        "coverage": result.get("coverage", {}),
-        "skip_steps": result.get("skip_steps", []),
-        "elapsed_ms": round(elapsed, 1),
-    }
-
-
-@app.post("/workflow/continue")
-async def continue_analysis(req: ContinueRequest):
-    """Continue workflow from STEP_2 with user-selected dataset, run through STEP_7."""
-    start = time.perf_counter()
-    logger.info("Continuing workflow with dataset=%s", req.selected_dataset)
-
-    try:
-        state_data = json.loads(req.state_json)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid state_json")
-
-    try:
-        state = await continue_workflow(state_data, req.selected_dataset, req.query)
-    except Exception:
-        logger.exception("Continue workflow failed")
-        raise HTTPException(status_code=502, detail="Workflow continuation failed")
+    state = await workflow_graph.aget_state(config)
+    cur = state.values if state else {}
 
     elapsed = (time.perf_counter() - start) * 1000
 
     return {
-        "state": state.to_dict(),
+        "analysis": cur.get("analysis", ""),
+        "datasets": cur.get("datasets", []),
+        "algorithms": cur.get("algorithms", []),
+        "capabilities": cur.get("capabilities", {}),
+        "capabilities_hint": cur.get("capabilities_hint", ""),
+        "state": {**cur, "thread_id": thread_id},
+        "coverage": cur.get("coverage", {}),
+        "skip_steps": [s.replace("step3_variables", "STEP_3_VARIABLE")
+                        .replace("step4_objectives", "STEP_4_OBJECTIVE")
+                        .replace("step5_constraints", "STEP_5_CONSTRAINT")
+                       for s in cur.get("skip_steps", [])],
         "elapsed_ms": round(elapsed, 1),
     }
 
-
-@app.post("/workflow/auto-continue")
-async def auto_continue_analysis(req: ContinueRequest):
-    """Continue workflow from dataset selection, auto-filling pre-covered steps."""
-    start = time.perf_counter()
-    logger.info("Auto-continue: dataset=%s, skip=%s", req.selected_dataset, req.skip_steps)
-
-    try:
-        state_data = json.loads(req.state_json)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid state_json")
-
-    state = WorkflowState(problem=req.query, dataset_name=req.selected_dataset,
-                          step_results=state_data.get("step_results", {}))
-
-    # Run STEP_2 first (record dataset choice)
-    state.step_results["STEP_2_DATASET"] = f"User selected dataset: {req.selected_dataset}"
-    state.dataset_name = req.selected_dataset
-
-    # Auto-fill skipped steps from the original query
-    skip_map = {
-        "STEP_3_VARIABLE": ("STEP_3_VARIABLE",
-            f"Variables extracted from user input: the problem description already specified the decision variables."),
-        "STEP_4_OBJECTIVE": ("STEP_4_OBJECTIVE",
-            f"Objectives extracted from user input: the user already described what to optimize."),
-        "STEP_5_CONSTRAINT": ("STEP_5_CONSTRAINT",
-            f"Constraints extracted from user input: constraints were already provided in the problem description."),
-    }
-    for step_key in req.skip_steps:
-        if step_key in skip_map:
-            s, msg = skip_map[step_key]
-            state.step_results[s] = msg
-
-    # Run remaining non-skipped steps
-    all_steps = ["STEP_3_VARIABLE", "STEP_4_OBJECTIVE", "STEP_5_CONSTRAINT", "STEP_6_CLASSIFY", "STEP_7_ALGO"]
-    for step in all_steps:
-        if step in req.skip_steps:
-            continue
-        try:
-            await run_step(step, state, req.query)
-        except Exception as e:
-            logger.exception("Step %s failed", step)
-            state.step_results[step] = f"Error: {e}"
-
-    elapsed = (time.perf_counter() - start) * 1000
-
-    return {
-        "state": state.to_dict(),
-        "elapsed_ms": round(elapsed, 1),
-    }
-
-
-# ── SSE Streaming ──────────────────────────────────────────────────────────
 
 @app.post("/workflow/stream")
 async def stream_continue(req: ContinueRequest):
-    """SSE streaming endpoint — pushes step_start, step_chunk, step_done, done events."""
-
+    """SSE streaming: resume graph from dataset selection, stream LLM tokens."""
     try:
         state_data = json.loads(req.state_json)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid state_json")
 
+    thread_id = state_data.get("thread_id", uuid.uuid4().hex[:12])
+    config = {"configurable": {"thread_id": thread_id}}
+
     async def event_generator():
+        current_step = None
+        step_buffer = []
+
         try:
-            async for event_str in stream_workflow_continue(
-                req.query, req.selected_dataset, state_data, req.skip_steps or [],
+            async for event in workflow_graph.astream_events(
+                Command(resume=req.selected_dataset),
+                config, version="v2",
             ):
-                yield event_str
+                kind = event["event"]
+                name = event.get("name", "")
+
+                if kind == "on_chain_start" and name in _WORKFLOW_NODE_STEPS:
+                    current_step = _WORKFLOW_NODE_STEPS[name]
+                    step_buffer = []
+                    yield _sse_str("step_start", {"step": current_step})
+
+                elif kind == "on_chat_model_stream" and current_step:
+                    chunk = event["data"]["chunk"]
+                    if chunk.content:
+                        step_buffer.append(chunk.content)
+                        yield _sse_str("step_chunk", {"step": current_step, "text": chunk.content})
+
+                elif kind == "on_chain_end" and name in _WORKFLOW_NODE_STEPS:
+                    output = "".join(step_buffer)
+                    yield _sse_str("step_done", {"step": current_step, "output": output})
+                    current_step = None
+
+            # Get final state
+            final_state = await workflow_graph.aget_state(config)
+            if final_state and final_state.values:
+                yield _sse_str("done", {"state": final_state.values})
+
+        except GraphInterrupt:
+            # Graph paused again (objectives/constraints interrupt — not used in current frontend flow)
+            pass
         except Exception as e:
-            logger.exception("Stream failed")
+            logger.exception("Workflow stream failed")
             yield _sse_str("error", {"error": str(e)})
 
     return StreamingResponse(
@@ -333,101 +306,113 @@ async def stream_continue(req: ContinueRequest):
     )
 
 
+@app.post("/workflow/continue")
+async def continue_analysis(req: ContinueRequest):
+    """Non-streaming continue — delegates to graph (kept for backward compat)."""
+    try:
+        state_data = json.loads(req.state_json)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid state_json")
+
+    thread_id = state_data.get("thread_id", uuid.uuid4().hex[:12])
+    config = {"configurable": {"thread_id": thread_id}}
+
+    try:
+        result = await workflow_graph.ainvoke(Command(resume=req.selected_dataset), config)
+        return {"state": result, "elapsed_ms": 0}
+    except Exception:
+        logger.exception("Continue workflow failed")
+        raise HTTPException(status_code=502, detail="Workflow continuation failed")
+
+
+@app.post("/workflow/auto-continue")
+async def auto_continue_analysis(req: ContinueRequest):
+    """Redirect to /workflow/stream (backward compat)."""
+    return await stream_continue(req)
+
+
 def _sse_str(event: str, data: dict) -> str:
     """Format a dict as an SSE message string."""
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
-# ── Agent Loop (LLM-driven multi-tool calling) ──────────────────────────────
-
-AGENT_SYSTEM_PROMPT = (
-    "You are an optimization expert agent with tool access. Follow this process:\n"
-    "1. Understand the user's optimization problem.\n"
-    "2. Use load_dataset to find the right benchmark dataset.\n"
-    "3. Execute one or more algorithms on the dataset using execute_solver. "
-    "When comparing algorithms, run them on the same dataset so results are comparable.\n"
-    "4. Use generate_chart to create visualizations (convergence curves, bar charts, etc.).\n"
-    "5. Compare results and give a final data-driven recommendation.\n\n"
-    "Always explain what you're doing before calling tools. "
-    "When the user asks to compare algorithms, execute ALL of them before giving the final answer. "
-    "Respond in Chinese if the user wrote in Chinese."
-)
-
+# ── Agent Mode: LangGraph create_react_agent ─────────────────────────────────
 
 @app.post("/workflow/agent-stream")
 async def agent_stream(req: WorkflowRequest):
-    """SSE streaming agent loop: LLM decides tools → execute in parallel → repeat → final answer."""
+    """SSE streaming agent loop powered by LangGraph's create_react_agent."""
+
+    conv_id = req.conversation_id or uuid.uuid4().hex[:12]
+    config = {"configurable": {"thread_id": conv_id}}
+
+    agent = build_agent()
 
     async def event_generator():
-        messages = [
-            {"role": "system", "content": AGENT_SYSTEM_PROMPT},
-            {"role": "user", "content": req.query},
-        ]
-
+        round_num = 0
         charts = []
-        max_rounds = 8
+        pending_tool_starts = []
 
-        for round_num in range(max_rounds):
-            yield _sse_str("thinking", {"round": round_num + 1})
+        try:
+            async for event in agent.astream_events(
+                {"messages": [{"role": "user", "content": req.query}]},
+                config, version="v2",
+            ):
+                kind = event["event"]
+                name = event.get("name", "")
 
-            try:
-                msg = await chat_completion_with_tools(messages, TOOLS)
-            except Exception as e:
-                logger.exception("Agent LLM call failed at round %d", round_num + 1)
-                yield _sse_str("error", {"error": f"LLM error: {e}"})
-                return
+                # --- Thinking round start ---
+                if kind == "on_chat_model_start":
+                    round_num += 1
+                    yield _sse_str("thinking", {"round": round_num})
 
-            # No tool calls → final answer
-            if not msg.tool_calls:
-                yield _sse_str("llm_response", {"content": msg.content or ""})
-                yield _sse_str("done", {"charts": charts})
-                return
+                # --- Tool calls (batch all starts in a round) ---
+                elif kind == "on_tool_start":
+                    pending_tool_starts.append({
+                        "id": event["run_id"],
+                        "name": name,
+                        "arguments": event["data"].get("input", {}),
+                    })
 
-            # Broadcast what tools the LLM wants to call
-            calls_info = []
-            for tc in msg.tool_calls:
-                try:
-                    args = json.loads(tc.function.arguments)
-                except (json.JSONDecodeError, TypeError):
-                    args = {}
-                calls_info.append({
-                    "id": tc.id,
-                    "name": tc.function.name,
-                    "arguments": args,
-                })
-            yield _sse_str("tool_calls", {"calls": calls_info})
+                # --- Tool results (first end flushes buffered starts) ---
+                elif kind == "on_tool_end":
+                    if pending_tool_starts:
+                        yield _sse_str("tool_calls", {"calls": pending_tool_starts})
+                        pending_tool_starts = []
 
-            # Append assistant message (may have content + tool_calls)
-            messages.append(msg.model_dump())
+                    output = event["data"].get("output", "")
+                    try:
+                        result = json.loads(output) if isinstance(output, str) else output
+                    except (json.JSONDecodeError, TypeError):
+                        result = {"output": str(output)}
 
-            # Execute all tool calls in parallel
-            async def run_one(tc):
-                try:
-                    args = json.loads(tc.function.arguments)
-                except (json.JSONDecodeError, TypeError):
-                    args = {}
-                loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(None, call_tool, tc.function.name, args)
-                return tc.id, tc.function.name, result
+                    yield _sse_str("tool_result", {
+                        "tool_call_id": event["run_id"],
+                        "name": name,
+                        "result": result,
+                    })
 
-            results = await asyncio.gather(*[run_one(tc) for tc in msg.tool_calls])
+                    # Track charts
+                    if name == "generate_chart":
+                        try:
+                            cd = json.loads(output) if isinstance(output, str) else output
+                            if cd.get("type"):
+                                charts.append(cd)
+                        except Exception:
+                            pass
 
-            for tool_id, tool_name, result in results:
-                yield _sse_str("tool_result", {
-                    "tool_call_id": tool_id,
-                    "name": tool_name,
-                    "result": result,
-                })
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": tool_id,
-                    "content": json.dumps(result, ensure_ascii=False),
-                })
+                # --- Agent finished ---
+                elif kind == "on_chain_end" and name == "agent":
+                    state = await agent.aget_state(config)
+                    if state and state.values:
+                        messages = state.values.get("messages", [])
+                        last_msg = messages[-1] if messages else None
+                        final_text = last_msg.content if last_msg and hasattr(last_msg, 'content') else ""
+                        yield _sse_str("llm_response", {"content": final_text})
+                    yield _sse_str("done", {"charts": charts})
 
-                if tool_name == "generate_chart" and result.get("success"):
-                    charts.append(result["result"])
-
-        yield _sse_str("error", {"error": "Reached maximum agent rounds without final answer"})
+        except Exception as e:
+            logger.exception("Agent stream failed")
+            yield _sse_str("error", {"error": str(e)})
 
     return StreamingResponse(
         event_generator(),
@@ -497,7 +482,7 @@ async def conversation_workflows(conv_id: str):
 
 @app.get("/workflow/health")
 async def health():
-    return {"status": "ok", "version": "0.4.0", "steps": WORKFLOW_STEPS}
+    return {"status": "ok", "version": "0.5.0", "engine": "langgraph"}
 
 
 if __name__ == "__main__":

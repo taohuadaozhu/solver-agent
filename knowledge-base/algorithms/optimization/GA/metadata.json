@@ -1,23 +1,15 @@
 {
   "name": "GA",
   "chineseName": "遗传算法",
-  "description": "GA 是经典遗传算法，通过选择、交叉和变异操作探索连续优化空间。",
-  "problemType": [
-    "Continuous Optimization"
-  ],
-  "objectiveType": [
-    "Single Objective"
-  ],
-  "variableType": [
-    "Continuous"
-  ],
-  "algorithmFamily": [
-    "Evolutionary"
-  ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Energy",
-    "Manufacturing"
-  ]
+  "description": "经典遗传算法，通过选择、交叉和变异操作搜索解空间，通用性强，适用于各类优化问题。",
+  "problemType": ["VRP", "TSP", "JSP", "FSP", "Scheduling", "Knapsack", "Continuous Optimization"],
+  "objectiveType": "single",
+  "variableType": ["continuous", "discrete", "binary"],
+  "algorithmFamily": ["Evolutionary"],
+  "constraints": {
+    "supported": ["capacity", "time_windows", "precedence", "setup_time"],
+    "required": [],
+    "optional": ["capacity", "time_windows", "precedence", "setup_time"]
+  },
+  "tags": ["遗传算法", "GA", "evolutionary", "通用", "单目标"]
 }

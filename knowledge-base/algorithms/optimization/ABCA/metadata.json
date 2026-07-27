@@ -3,21 +3,22 @@
   "chineseName": "",
   "description": "ABCA 是 Swarm 路径的一种连续优化算法，通常用于单目标优化问题。",
   "problemType": [
+    "VRP",
+    "TSP",
+    "Scheduling",
     "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Continuous"
   ],
   "algorithmFamily": [
     "Swarm"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Energy",
-    "Manufacturing"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

@@ -12,7 +12,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from backend.rag.retriever import semantic_search
+from backend.rag.retriever import semantic_search, hybrid_search_with_rerank
 from backend.llm.openai_client import chat_completion
 from backend.llm.prompt import build_prompt
 
@@ -40,6 +40,7 @@ class RecommendRequest(BaseModel):
     query: str = Field(..., min_length=1, description="User's problem description or query")
     top_k: int = Field(default=5, ge=1, le=20, description="Number of documents to retrieve")
     type: Optional[str] = Field(default=None, pattern=r"^(algorithms|projects|datasets)$", description="Filter by document type")
+    use_hybrid: bool = Field(default=False, description="Use hybrid search (dense + sparse) with LLM rerank")
 
 
 class ResultItem(BaseModel):
@@ -65,9 +66,12 @@ async def recommend(req: RecommendRequest):
     logger.info("POST /recommend query=%.80s... top_k=%d type=%s", req.query, req.top_k, req.type or "all")
 
     try:
-        results = await semantic_search(req.query, top_k=req.top_k, doc_type=req.type)
+        if req.use_hybrid:
+            results = await hybrid_search_with_rerank(req.query, top_k=req.top_k, doc_type=req.type)
+        else:
+            results = await semantic_search(req.query, top_k=req.top_k, doc_type=req.type)
     except Exception:
-        logger.exception("Semantic search failed")
+        logger.exception("Search failed")
         raise HTTPException(status_code=502, detail="Embedding or database error")
 
     if not results:

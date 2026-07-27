@@ -3,20 +3,22 @@
   "chineseName": "",
   "description": "单目标PSO变体，面向排列编码的离散群体搜索。",
   "problemType": [
-    "Permutation Optimization"
+    "VRP",
+    "TSP",
+    "Scheduling",
+    "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Discrete"
   ],
   "algorithmFamily": [
     "Swarm"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Logistics"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

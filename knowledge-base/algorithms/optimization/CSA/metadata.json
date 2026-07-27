@@ -3,21 +3,22 @@
   "chineseName": "鸡群算法",
   "description": "CSA 是鸡群算法，基于群体协作与试探搜索实现连续优化。",
   "problemType": [
+    "VRP",
+    "TSP",
+    "Scheduling",
     "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Continuous"
   ],
   "algorithmFamily": [
     "Swarm"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Energy",
-    "Manufacturing"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

@@ -1,23 +1,21 @@
 {
   "name": "NSGA-II",
   "chineseName": "非支配排序遗传算法 II",
-  "description": "NSGA-II 是一种经典的多目标演化算法，通过非支配排序与拥挤距离选择保持解集的收敛性和多样性，适用于连续变量多目标优化问题。",
-  "problemType": [
-    "Continuous Optimization"
+  "description": "经典多目标演化算法，通过非支配排序与拥挤距离选择保持解集收敛性和多样性，适用于多目标优化问题。",
+  "problemType": ["VRP", "TSP", "JSP", "FSP", "Scheduling", "Continuous Optimization"],
+  "objectiveType": "multi",
+  "variableType": ["continuous", "discrete"],
+  "algorithmFamily": ["Evolutionary"],
+  "constraints": {
+    "supported": ["capacity", "time_windows", "precedence", "setup_time"],
+    "required": [],
+    "optional": ["capacity", "time_windows", "precedence", "setup_time"]
+  },
+  "parameters": [
+    {"name": "population_size", "type": "int", "default": 100, "min": 20, "max": 1000, "required": false, "description": "种群大小（多目标需要更大队列）"},
+    {"name": "num_generations", "type": "int", "default": 250, "min": 10, "max": 2000, "required": false, "description": "最大迭代代数"},
+    {"name": "crossover_rate", "type": "float", "default": 0.9, "min": 0.0, "max": 1.0, "required": false, "description": "交叉概率"},
+    {"name": "mutation_rate", "type": "float", "default": 0.1, "min": 0.0, "max": 0.5, "required": false, "description": "变异概率"}
   ],
-  "objectiveType": [
-    "Multi Objective"
-  ],
-  "variableType": [
-    "Continuous"
-  ],
-  "algorithmFamily": [
-    "Evolutionary"
-  ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Energy",
-    "Manufacturing"
-  ]
+  "tags": ["NSGA-II", "多目标", "pareto", "evolutionary", "非支配排序"]
 }

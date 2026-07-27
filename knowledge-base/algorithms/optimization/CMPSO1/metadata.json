@@ -3,20 +3,22 @@
   "chineseName": "",
   "description": "PSO1 的 Cauchy 变异增强版本，用于离散排列优化。",
   "problemType": [
-    "Permutation Optimization"
+    "VRP",
+    "TSP",
+    "Scheduling",
+    "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Discrete"
   ],
   "algorithmFamily": [
     "Swarm"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Logistics"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

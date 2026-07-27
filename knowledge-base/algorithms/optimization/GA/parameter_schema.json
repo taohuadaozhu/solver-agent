@@ -1,37 +1,30 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "GA Parameter Schema",
-  "type": "object",
-  "properties": {
-    "population_size": {
-      "type": "integer",
-      "title": "Population Size",
-      "minimum": 4,
-      "default": 100
-    },
-    "num_generations": {
-      "type": "integer",
-      "title": "Number of Generations",
-      "minimum": 1,
-      "default": 200
-    },
-    "mutation_rate": {
-      "type": "number",
-      "title": "Mutation Rate",
-      "minimum": 0.0,
-      "maximum": 1.0,
-      "default": 0.1
-    },
-    "crossover_rate": {
-      "type": "number",
-      "title": "Crossover Rate",
-      "minimum": 0.0,
-      "maximum": 1.0,
-      "default": 0.9
-    }
+  "population_size": {
+    "type": "integer",
+    "required": false,
+    "default": 50,
+    "range": {"min": 10, "max": 500},
+    "description": "种群大小，每一代的个体数量"
   },
-  "required": [
-    "population_size",
-    "num_generations"
-  ]
+  "num_generations": {
+    "type": "integer",
+    "required": false,
+    "default": 200,
+    "range": {"min": 10, "max": 2000},
+    "description": "最大迭代代数"
+  },
+  "crossover_rate": {
+    "type": "float",
+    "required": false,
+    "default": 0.9,
+    "range": {"min": 0.0, "max": 1.0},
+    "description": "交叉概率，控制父代基因组合的程度"
+  },
+  "mutation_rate": {
+    "type": "float",
+    "required": false,
+    "default": 0.1,
+    "range": {"min": 0.0, "max": 0.5},
+    "description": "变异概率，引入随机扰动以维持种群多样性"
+  }
 }

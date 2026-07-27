@@ -3,21 +3,22 @@
   "chineseName": "和声搜索",
   "description": "HS 是和声搜索算法，通过模仿音乐家即时调整和声实现搜索。",
   "problemType": [
+    "VRP",
+    "TSP",
+    "Scheduling",
     "Continuous Optimization"
   ],
-  "objectiveType": [
-    "Single Objective"
-  ],
+  "objectiveType": "single",
   "variableType": [
     "Continuous"
   ],
   "algorithmFamily": [
     "Swarm"
   ],
-  "businessScenario": [
-    "Transportation",
-    "Scheduling",
-    "Energy",
-    "Manufacturing"
-  ]
+  "constraints": {
+    "supported": [],
+    "required": [],
+    "optional": []
+  },
+  "tags": []
 }

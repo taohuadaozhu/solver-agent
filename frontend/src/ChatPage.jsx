@@ -49,22 +49,26 @@ function DocBadge({ doc, index }) {
 
 /* ── AgentPanel — LLM-driven multi-tool agent with SSE streaming ───────── */
 
-function AgentPanel({ query }) {
+function AgentPanel({ query, convId, onAgentDone }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [finalAnswer, setFinalAnswer] = useState('');
   const [charts, setCharts] = useState([]);
   const [error, setError] = useState('');
+  const savedRef = useRef(false);
+  const answerRef = useRef('');
 
   useEffect(() => {
     let cancelled = false;
+    savedRef.current = false;
+    answerRef.current = '';
     (async () => {
       setLoading(true);
       try {
         const res = await fetch(`${API_WORKFLOW}/workflow/agent-stream`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query }),
+          body: JSON.stringify({ query, conversation_id: convId || undefined }),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const reader = res.body.getReader();
@@ -102,10 +106,22 @@ function AgentPanel({ query }) {
                     break;
                   case 'llm_response':
                     setFinalAnswer(data.content);
+                    answerRef.current = data.content || '';
                     break;
                   case 'done':
                     if (data.charts?.length) setCharts(data.charts);
                     setLoading(false);
+                    if (convId && !savedRef.current) {
+                      savedRef.current = true;
+                      const answer = answerRef.current;
+                      if (answer) {
+                        fetch(`${API_WORKFLOW}/memory/messages`, {
+                          method: 'POST', headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ conversation_id: convId, role: 'assistant', content: answer }),
+                        }).catch(() => {});
+                      }
+                      if (onAgentDone) onAgentDone(answer);
+                    }
                     break;
                   case 'error':
                     setError(data.error);
@@ -245,6 +261,8 @@ function WorkflowPanel({ query, onDone, saveWorkflow }) {
   const [loading, setLoading] = useState(false);
   const [output, setOutput] = useState({});
   const [datasets, setDatasets] = useState([]);
+  const [algorithms, setAlgorithms] = useState([]);
+  const [capabilitiesHint, setCapabilitiesHint] = useState('');
   const [selectedDataset, setSelectedDataset] = useState('');
   const [userInput, setUserInput] = useState('');
   const [execResult, setExecResult] = useState(null);
@@ -274,6 +292,12 @@ function WorkflowPanel({ query, onDone, saveWorkflow }) {
         if (data.datasets?.length > 0) {
           setDatasets(data.datasets);
           setSelectedDataset(data.datasets[0].name);
+        }
+        if (data.algorithms?.length > 0) {
+          setAlgorithms(data.algorithms);
+        }
+        if (data.capabilities_hint) {
+          setCapabilitiesHint(data.capabilities_hint);
         }
         // Handle step skipping: auto-fill pre-covered steps
         const skips = data.skip_steps || [];
@@ -596,6 +620,24 @@ function WorkflowPanel({ query, onDone, saveWorkflow }) {
               </label>
             ))}
           </div>
+          {algorithms.length > 0 && (
+            <div className="algo-suggestions" style={{ marginTop: 12 }}>
+              <h4>Candidate algorithms for your problem:</h4>
+              <div className="algo-tags">
+                {algorithms.slice(0, 6).map((a, i) => (
+                  <span key={i} className="algo-tag" title={a.summary}>
+                    {a.name}
+                    <small> ({(a.similarity * 100).toFixed(0)}%)</small>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {capabilitiesHint && (
+            <div className="capabilities-hint" style={{ marginTop: 12, padding: 10, background: '#f0f4ff', borderRadius: 8, fontSize: '0.85em', whiteSpace: 'pre-wrap' }}>
+              {capabilitiesHint}
+            </div>
+          )}
           <button
             className="next-btn"
             style={{ marginTop: 8 }}
@@ -610,12 +652,17 @@ function WorkflowPanel({ query, onDone, saveWorkflow }) {
       {/* User input for objectives/constraints */}
       {needsUserInput && (
         <div className="user-input-area">
+          {capabilitiesHint && (
+            <div className="capabilities-hint" style={{ marginBottom: 8, padding: 8, background: '#f0f4ff', borderRadius: 8, fontSize: '0.82em', whiteSpace: 'pre-wrap' }}>
+              {capabilitiesHint}
+            </div>
+          )}
           <textarea
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             placeholder={currentStep === 'STEP_4_OBJECTIVE'
-              ? 'e.g. Minimize total completion time, minimize cost...'
-              : 'e.g. Each machine can only process one job at a time, precedence constraints...'}
+              ? 'Describe your optimization objectives... e.g. Minimize total completion time and cost.'
+              : 'Describe your constraints... e.g. Each machine can only process one job at a time, setup times between jobs, machine breakdowns.'}
             rows={4}
             disabled={loading}
           />
@@ -682,7 +729,7 @@ function Message({ msg }) {
       <div className="message-content">
         {msg.role === 'user' && <div className="user-text">{msg.content}</div>}
         {msg.workflowQuery && <WorkflowPanel query={msg.workflowQuery} saveWorkflow={msg.saveWorkflow} />}
-        {msg.agentQuery && <AgentPanel query={msg.agentQuery} />}
+        {msg.agentQuery && <AgentPanel query={msg.agentQuery} convId={msg.convId} />}
         {msg.answer && <div className="answer-text">{msg.answer}</div>}
         {msg.error && <div className="answer-error">{msg.error}</div>}
       </div>
@@ -809,9 +856,10 @@ export default function ChatPage() {
     setInput('');
   };
 
-  const handleSendAgent = (query) => {
-    saveMsg('user', query);
-    setMessages((prev) => [...prev, { role: 'user', content: query }, { role: 'assistant', agentQuery: query }]);
+  const handleSendAgent = async (query) => {
+    await saveMsg('user', query);
+    const id = sessionStorage.getItem('conv_id');
+    setMessages((prev) => [...prev, { role: 'user', content: query }, { role: 'assistant', agentQuery: query, convId: id }]);
     setInput('');
   };
 
